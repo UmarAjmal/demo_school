@@ -7,7 +7,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '@/contexts/AuthContext';
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com";
 
 function useAutoBackup(isLoggedIn: boolean) {
   useEffect(() => {

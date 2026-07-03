@@ -71,7 +71,7 @@ type CardPayload = {
     students: CardStudent[];
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com";
 
 
 
@@ -91,7 +91,7 @@ function esc(text: unknown) {
         .replace(/'/g, '&#39;');
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com";
 
 
 function buildPrintHtml(payload: CardPayload, autoPrint = false) {

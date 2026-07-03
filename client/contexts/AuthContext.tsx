@@ -36,7 +36,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const SESSION_KEY = 'sms_user_session';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null);
@@ -90,19 +90,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Hierarchy: Admin (>=90) > Supervisor (>=65) > Role permissions
     const hasPermission = useCallback((module: string, action: 'read' | 'write' | 'delete' = 'read'): boolean => {
         if (!user) return false;
-        
+
         const roleLevel = user.role_level || 0;
         const moduleLower = module.toLowerCase();
-        
+
         // 1. Admin (role_level >= 90): Full access to everything
         if (roleLevel >= 90) return true;
 
         // 2. Supervisor (role_level >= 65): Access to academic & operational modules
         const supervisorModules = ['attendance', 'academic', 'exams', 'marks', 'result', 'exam_fees', 'fees', 'classes', 'sections', 'dashboard'];
-        const isModuleAllowed = supervisorModules.some(m => 
+        const isModuleAllowed = supervisorModules.some(m =>
             moduleLower === m || moduleLower.startsWith(m + '.')
         );
-        
+
         if (roleLevel >= 65 && isModuleAllowed) {
             // Supervisors can read and write (not delete)
             if (action === 'delete') return false;

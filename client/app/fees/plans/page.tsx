@@ -63,7 +63,7 @@ export default function FeePlansPage() {
 
     const fetchPlans = async () => {
         try {
-            const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/fee-plans`);
+            const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/fee-plans`);
             const data = await r.json();
             setPlans(Array.isArray(data) ? data : []);
         } catch { } finally { setLoading(false); }
@@ -71,14 +71,14 @@ export default function FeePlansPage() {
 
     const fetchHeads = async () => {
         try {
-            const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/fee-heads/active`);
+            const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/fee-heads/active`);
             setAllHeads(await r.json());
         } catch { }
     };
 
     const fetchClasses = async () => {
         try {
-            const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/academic`);
+            const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/academic`);
             setClasses(await r.json());
         } catch { }
     };
@@ -137,7 +137,7 @@ export default function FeePlansPage() {
             return;
         }
         try {
-            const url = editMode ? `${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/fee-plans/${editId}` : `${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/fee-plans`;
+            const url = editMode ? `${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/fee-plans/${editId}` : `${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/fee-plans`;
             const method = editMode ? 'PUT' : 'POST';
             const res = await fetch(url, {
                 method, headers: { 'Content-Type': 'application/json' },
@@ -154,7 +154,7 @@ export default function FeePlansPage() {
 
     const handleDelete = async (id: number) => {
         if (!confirm('Delete this fee plan?')) return;
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/fee-plans/${id}`, { method: 'DELETE' });
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/fee-plans/${id}`, { method: 'DELETE' });
         fetchPlans();
     };
 
@@ -385,8 +385,8 @@ export default function FeePlansPage() {
                                                                         <input type="checkbox" className="form-check-input mt-0" readOnly checked={!!sel} />
                                                                         <span className="fw-bold small">{head.head_name}</span>
                                                                         <span className={`badge rounded-pill ms-auto ${head.head_type === 'regular' ? 'bg-info text-dark' :
-                                                                                head.head_type === 'prev_balance' ? 'text-white' :
-                                                                                    'bg-warning text-dark'}`}
+                                                                            head.head_type === 'prev_balance' ? 'text-white' :
+                                                                                'bg-warning text-dark'}`}
                                                                             style={head.head_type === 'prev_balance' ? { background: '#6f42c1' } : {}}>
                                                                             {head.head_type === 'prev_balance' ? 'Prev. Balance' : head.head_type}
                                                                         </span>

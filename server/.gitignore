@@ -2,8 +2,8 @@ node_modules/
 uploads/
 backups/
 temp/
-# .env
-# .env.production
+.env
+.env.production
 *.sql
 .DS_Store
 *.log

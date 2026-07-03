@@ -41,7 +41,7 @@ interface PaymentForm {
   payment_date: string;
 }
 
-const API = `${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}"}`;
+const API = `${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}"}`;
 
 interface SchoolInfo {
   school_name: string;

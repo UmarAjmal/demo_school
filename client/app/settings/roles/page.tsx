@@ -180,7 +180,7 @@ export default function RolesPage() {
 
     const fetchRoles = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/roles`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/roles`);
             const data = await res.json();
             setRoles(data);
         } catch { showToastMsg('danger', 'Failed to load roles'); }
@@ -207,10 +207,10 @@ export default function RolesPage() {
     };
 
     const handleEdit = (role: Role) => {
-        setFormData({ 
-            ...role, 
+        setFormData({
+            ...role,
             role_level: role.role_level || 50,
-            permissions: buildFormPerms(role.permissions || []) 
+            permissions: buildFormPerms(role.permissions || [])
         });
         setExpanded(Object.fromEntries(Object.keys(PAGE_TREE).map(k => [k, true])));
         setView('form');
@@ -219,7 +219,7 @@ export default function RolesPage() {
     const handleClone = async (roleId: number) => {
         try {
             setSaving(true);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/roles/${roleId}/clone`, { method: 'POST' });
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/roles/${roleId}/clone`, { method: 'POST' });
             if (res.ok) {
                 fetchRoles();
                 showToastMsg('success', 'Role cloned successfully! Edit the new role to customize it.');
@@ -240,7 +240,7 @@ export default function RolesPage() {
     const handleDelete = async (id: number) => {
         if (!confirm('Are you sure? This role will be permanently deleted.')) return;
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/roles/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/roles/${id}`, { method: 'DELETE' });
             if (res.ok) { fetchRoles(); showToastMsg('success', 'Role deleted'); }
             else showToastMsg('danger', 'Failed to delete role');
         } catch { showToastMsg('danger', 'Server error'); }
@@ -248,19 +248,19 @@ export default function RolesPage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // If editing existing role with assigned users, show confirmation modal
         if (formData.id !== 0 && (formData.assigned_count ?? 0) > 0) {
             setConfirmModal({ show: true, assignedCount: formData.assigned_count ?? 0, roleId: formData.id, originalLevel: formData.role_level });
             return;
         }
-        
+
         await performSave(true);
     };
 
     const performSave = async (applyToAssigned: boolean = true) => {
         setSaving(true);
-        const url = formData.id === 0 ? `${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/roles` : `${process.env.NEXT_PUBLIC_API_URL || "https://shaheenschool.onrender.com"}/roles/${formData.id}?apply_to_assigned=${applyToAssigned}`;
+        const url = formData.id === 0 ? `${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/roles` : `${process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com"}/roles/${formData.id}?apply_to_assigned=${applyToAssigned}`;
         const method = formData.id === 0 ? 'POST' : 'PUT';
         try {
             const res = await fetch(url, {
@@ -804,7 +804,7 @@ export default function RolesPage() {
 
             {/* Confirmation Modal */}
             {confirmModal?.show && (
-                <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
+                <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
                     style={{ background: 'rgba(0,0,0,0.5)', zIndex: 9999 }}>
                     <div className="card border-0 rounded-4 shadow-lg" style={{ maxWidth: 450, width: '90%' }}>
                         <div className="card-body p-4">
