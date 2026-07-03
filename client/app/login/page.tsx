@@ -49,18 +49,19 @@ export default function LoginPage() {
             }).catch(e => console.error('Failed to fetch Umar Ajmal data:', e));
 
         // Fetch Muhammad Abdullah dynamically
-        fetch('https://api.github.com/users/AbdullahWali79')
-            .then(res => res.json())
-            .then(data => {
-                if (data.name) {
-                    setDevAbdullah(prev => ({
-                        name: data.name || prev.name,
-                        bio: data.bio || prev.bio,
-                        avatar: prev.avatar // Keeping his professional photo as preferred, or swapping if desired.
-                    }));
-                }
-            }).catch(e => console.error('Failed to fetch Abdullah Wali data:', e));
-    }, []);
+    //     fetch('https://api.github.com/users/AbdullahWali79')
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             if (data.name) {
+    //                 setDevAbdullah(prev => ({
+    //                     name: data.name || prev.name,
+    //                     bio: data.bio || prev.bio,
+    //                     avatar: prev.avatar // Keeping his professional photo as preferred, or swapping if desired.
+    //                 }));
+    //             }
+    //         }).catch(e => console.error('Failed to fetch Abdullah Wali data:', e));
+     }, 
+    []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

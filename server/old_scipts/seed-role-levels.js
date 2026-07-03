@@ -1,7 +1,7 @@
 // Seed script to initialize role levels for existing and new roles
 // Run this after migration to ensure all roles have proper levels
 
-const pool = require('./db');
+const pool = require('../db');
 
 async function seedRoleLevels() {
     const client = await pool.connect();
