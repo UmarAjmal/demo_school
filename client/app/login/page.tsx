@@ -159,7 +159,7 @@ export default function LoginPage() {
                 <h4 className="footer-title">Credits & Developers</h4>
                 <div className="footer-cards-container">
 
-                    {/* Project Manager / Mohammad Abdullah */}
+                    {/* Project Manager / Mohammad Abdullah
                     <a href="https://muhammadabdullahwali.vercel.app/" target="_blank" rel="noopener noreferrer" className="dev-card">
                         <img src={devAbdullah.avatar} alt="PM" className="dev-avatar" />
                         <div className="dev-details">
@@ -167,7 +167,7 @@ export default function LoginPage() {
                             <strong className="dev-name">{devAbdullah.name}</strong>
                             <span className="dev-bio">{devAbdullah.bio}</span>
                         </div>
-                    </a>
+                    </a> */}
 
                     {/* Developer / Umar Ajmal */}
                     <a href="https://muhammadumarajmal.vercel.app/" target="_blank" rel="noopener noreferrer" className="dev-card">
