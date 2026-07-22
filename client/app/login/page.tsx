@@ -98,10 +98,10 @@ export default function LoginPage() {
                     {/* Left Brand & Quote Panel */}
                     <div className="brand-panel">
                         <div className="brand-top">
-                            <div className="brand-header-badge">
+                            {/* <div className="brand-header-badge">
                                 <span className="brand-dot" />
                                 <span>Unified Access Portal</span>
-                            </div>
+                            </div> */}
 
                             <div className="brand-hero">
                                 <div className="brand-icon-halo">
@@ -129,12 +129,12 @@ export default function LoginPage() {
                         </div>
 
                         <div className="brand-footer-bar">
-                            <div className="role-tags">
+                            {/* <div className="role-tags">
                                 <span className="role-tag"><i className="bi bi-shield-check" /> Admin</span>
                                 <span className="role-tag"><i className="bi bi-journal-text" /> Teacher</span>
                                 <span className="role-tag"><i className="bi bi-calculator" /> Accountant</span>
                                 <span className="role-tag"><i className="bi bi-person-badge" /> Student</span>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
