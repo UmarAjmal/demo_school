@@ -36,7 +36,7 @@ export default function LoginPage() {
         }
     }, [isLoading, isLoggedIn, router]);
 
-    // Fetch dynamic GitHub data
+    // Fetch dynamic GitHub data for Umar
     useEffect(() => {
         fetch('https://api.github.com/users/UmarAjmal')
             .then(res => res.json())
@@ -88,69 +88,53 @@ export default function LoginPage() {
         <div className="login-page">
             <AnimatedBackground />
 
-            {/* Ambient Background Light Orbs */}
+            {/* Enhanced Ambient Background Glow Orbs */}
             <div className="ambient-glow orb-teal" />
             <div className="ambient-glow orb-orange" />
+            <div className="ambient-glow orb-top-center" />
 
             <div className="content-wrapper">
                 <main className="glass-board">
-                    {/* Left Brand Panel */}
+                    {/* Left Brand & Quote Panel */}
                     <div className="brand-panel">
-                        <div className="brand-header">
-                            <div className="brand-icon-wrap">
-                                <div className="brand-icon-inner">
+                        <div className="brand-top">
+                            <div className="brand-header-badge">
+                                <span className="brand-dot" />
+                                <span>Unified Access Portal</span>
+                            </div>
+
+                            <div className="brand-hero">
+                                <div className="brand-icon-halo">
                                     <i className="bi bi-mortarboard-fill" />
                                 </div>
+                                <h1 className="brand-title">
+                                    Smart School <br />
+                                    <span className="text-gradient">System</span>
+                                </h1>
                             </div>
-                            <span className="brand-badge">Enterprise Edition</span>
                         </div>
 
-                        <div className="brand-body">
-                            <h1 className="brand-title">
-                                Smart School <br />
-                                <span className="text-gradient">Management System</span>
-                            </h1>
-                            <p className="brand-subtitle">
-                                A comprehensive platform to manage academics, student records, staff operations, and institutional finances seamlessly.
+                        {/* Educational Quote Box */}
+                        <div className="quote-container">
+                            <div className="quote-icon-top">
+                                <i className="bi bi-quote" />
+                            </div>
+                            <p className="quote-text">
+                                &ldquo;Education is the most powerful weapon which you can use to change the world.&rdquo;
                             </p>
-
-                            <div className="features-list">
-                                <div className="feature-item">
-                                    <div className="feature-icon">
-                                        <i className="bi bi-shield-check" />
-                                    </div>
-                                    <div className="feature-text">
-                                        <strong>Complete Academic & Fee Tracking</strong>
-                                        <span>Automated gradebooks, fee vouchers, and real-time ledger records.</span>
-                                    </div>
-                                </div>
-
-                                <div className="feature-item">
-                                    <div className="feature-icon">
-                                        <i className="bi bi-people-fill" />
-                                    </div>
-                                    <div className="feature-text">
-                                        <strong>Student & Staff Administration</strong>
-                                        <span>Centralized profiles, attendance monitoring, and role management.</span>
-                                    </div>
-                                </div>
-
-                                <div className="feature-item">
-                                    <div className="feature-icon">
-                                        <i className="bi bi-graph-up-arrow" />
-                                    </div>
-                                    <div className="feature-text">
-                                        <strong>Executive Analytics & Reports</strong>
-                                        <span>Instant insights into school performance and revenue stream graphs.</span>
-                                    </div>
-                                </div>
+                            <div className="quote-author">
+                                <span className="author-dash">&mdash;</span>
+                                <span className="author-name">Nelson Mandela</span>
                             </div>
                         </div>
 
                         <div className="brand-footer-bar">
-                            <span className="security-tag">
-                                <i className="bi bi-lock-fill" /> Encrypted & Secure Protocol
-                            </span>
+                            <div className="role-tags">
+                                <span className="role-tag"><i className="bi bi-shield-check" /> Admin</span>
+                                <span className="role-tag"><i className="bi bi-journal-text" /> Teacher</span>
+                                <span className="role-tag"><i className="bi bi-calculator" /> Accountant</span>
+                                <span className="role-tag"><i className="bi bi-person-badge" /> Student</span>
+                            </div>
                         </div>
                     </div>
 
@@ -158,10 +142,10 @@ export default function LoginPage() {
                     <div className="form-panel">
                         <div className="form-header">
                             <div className="form-avatar-icon">
-                                <i className="bi bi-shield-lock-fill" />
+                                <i className="bi bi-person-workspace" />
                             </div>
                             <h2>Welcome Back</h2>
-                            <p>Sign in to access your administrative dashboard</p>
+                            <p>Sign in to access your portal account</p>
                         </div>
 
                         <form onSubmit={handleSubmit} noValidate className="login-form">
@@ -190,9 +174,7 @@ export default function LoginPage() {
                             </div>
 
                             <div className="form-group mb-4">
-                                <div className="d-flex justify-content-between align-items-center mb-1">
-                                    <label htmlFor="password-input">Password</label>
-                                </div>
+                                <label htmlFor="password-input">Password</label>
                                 <div className="input-field-wrap">
                                     <i className="bi bi-lock-fill input-icon" />
                                     <input
@@ -221,7 +203,7 @@ export default function LoginPage() {
                                     <span className="submit-spinner" />
                                 ) : (
                                     <>
-                                        <span>Sign In to System</span>
+                                        <span>Sign In to Portal</span>
                                         <i className="bi bi-arrow-right-short btn-arrow" />
                                     </>
                                 )}
@@ -294,11 +276,11 @@ export default function LoginPage() {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: #1a2f3b;
+                    background: #0f1c24;
                 }
                 .spinner-glow {
-                    width: 50px;
-                    height: 50px;
+                    width: 52px;
+                    height: 52px;
                     border: 3px solid rgba(254, 127, 45, 0.2);
                     border-top-color: #FE7F2D;
                     border-radius: 50%;
@@ -312,38 +294,46 @@ export default function LoginPage() {
                 .login-page {
                     position: relative;
                     min-height: 100vh;
-                    background: #152733;
+                    background: #0f1c24;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: space-between;
                     overflow-x: hidden;
                     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    padding: 30px 16px 20px;
+                    padding: 36px 16px 24px;
                 }
 
-                /* Ambient Background Glows */
+                /* Enhanced Ambient Background Glows */
                 .ambient-glow {
                     position: fixed;
                     border-radius: 50%;
-                    filter: blur(120px);
+                    filter: blur(140px);
                     pointer-events: none;
                     z-index: 1;
-                    opacity: 0.35;
+                    opacity: 0.45;
                 }
                 .orb-teal {
-                    width: 500px;
-                    height: 500px;
-                    background: radial-gradient(circle, #215E61 0%, rgba(33, 94, 97, 0) 70%);
-                    top: -100px;
-                    left: -100px;
+                    width: 550px;
+                    height: 550px;
+                    background: radial-gradient(circle, rgba(33, 94, 97, 0.8) 0%, rgba(33, 94, 97, 0) 70%);
+                    top: -120px;
+                    left: -120px;
                 }
                 .orb-orange {
-                    width: 450px;
-                    height: 450px;
-                    background: radial-gradient(circle, #FE7F2D 0%, rgba(254, 127, 45, 0) 70%);
-                    bottom: -80px;
-                    right: -80px;
+                    width: 500px;
+                    height: 500px;
+                    background: radial-gradient(circle, rgba(254, 127, 45, 0.6) 0%, rgba(254, 127, 45, 0) 70%);
+                    bottom: -100px;
+                    right: -100px;
+                }
+                .orb-top-center {
+                    width: 400px;
+                    height: 300px;
+                    background: radial-gradient(circle, rgba(35, 61, 77, 0.7) 0%, rgba(15, 28, 36, 0) 70%);
+                    top: 10%;
+                    left: 50%;
+                    transform: translateX(-50%);
                 }
 
                 /* Content Wrapper */
@@ -361,17 +351,17 @@ export default function LoginPage() {
                 .glass-board {
                     display: flex;
                     width: 100%;
-                    background: rgba(18, 34, 45, 0.65);
-                    backdrop-filter: blur(24px);
-                    -webkit-backdrop-filter: blur(24px);
+                    background: rgba(15, 28, 36, 0.75);
+                    backdrop-filter: blur(28px);
+                    -webkit-backdrop-filter: blur(28px);
                     border-radius: 28px;
                     border: 1px solid rgba(255, 255, 255, 0.12);
-                    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.65),
-                                0 0 40px rgba(33, 94, 97, 0.15);
+                    box-shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.75),
+                                0 0 50px rgba(33, 94, 97, 0.2);
                     overflow: hidden;
                 }
 
-                /* Brand Panel (Left) */
+                /* Brand & Quote Panel (Left) */
                 .brand-panel {
                     flex: 1.25;
                     padding: 55px 48px;
@@ -379,117 +369,136 @@ export default function LoginPage() {
                     display: flex;
                     flex-direction: column;
                     justify-content: space-between;
-                    background: linear-gradient(150deg, rgba(33, 94, 97, 0.4) 0%, rgba(35, 61, 77, 0.6) 100%);
+                    background: linear-gradient(150deg, rgba(33, 94, 97, 0.45) 0%, rgba(23, 44, 56, 0.75) 100%);
                     border-right: 1px solid rgba(255, 255, 255, 0.08);
                     position: relative;
                 }
-                .brand-header {
-                    display: flex;
+
+                .brand-header-badge {
+                    display: inline-flex;
                     align-items: center;
-                    justify-content: space-between;
-                    margin-bottom: 24px;
-                }
-                .brand-icon-wrap {
-                    width: 56px;
-                    height: 56px;
-                    border-radius: 16px;
-                    background: linear-gradient(135deg, rgba(254, 127, 45, 0.2), rgba(33, 94, 97, 0.4));
-                    border: 1px solid rgba(254, 127, 45, 0.4);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 8px 20px rgba(254, 127, 45, 0.25);
-                }
-                .brand-icon-inner i {
-                    font-size: 1.8rem;
-                    color: #FE7F2D;
-                }
-                .brand-badge {
-                    font-size: 0.72rem;
+                    gap: 8px;
+                    font-size: 0.73rem;
                     font-weight: 700;
                     text-transform: uppercase;
                     letter-spacing: 1.2px;
                     background: rgba(254, 127, 45, 0.15);
                     color: #FE7F2D;
-                    border: 1px solid rgba(254, 127, 45, 0.3);
-                    padding: 6px 14px;
+                    border: 1px solid rgba(254, 127, 45, 0.35);
+                    padding: 6px 16px;
                     border-radius: 20px;
+                    margin-bottom: 30px;
+                }
+                .brand-dot {
+                    width: 7px;
+                    height: 7px;
+                    border-radius: 50%;
+                    background: #FE7F2D;
+                    box-shadow: 0 0 8px #FE7F2D;
+                }
+
+                .brand-hero {
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                    margin-bottom: 36px;
+                }
+                .brand-icon-halo {
+                    width: 68px;
+                    height: 68px;
+                    min-width: 68px;
+                    border-radius: 20px;
+                    background: linear-gradient(135deg, rgba(254, 127, 45, 0.25), rgba(33, 94, 97, 0.5));
+                    border: 1.5px solid rgba(254, 127, 45, 0.45);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 10px 25px rgba(254, 127, 45, 0.3);
+                }
+                .brand-icon-halo i {
+                    font-size: 2.2rem;
+                    color: #FE7F2D;
                 }
                 .brand-title {
                     font-size: 2.35rem;
                     font-weight: 800;
-                    line-height: 1.2;
+                    line-height: 1.15;
                     letter-spacing: -0.5px;
-                    margin-bottom: 16px;
+                    margin: 0;
                 }
                 .text-gradient {
                     background: linear-gradient(135deg, #FFFFFF 30%, #FE7F2D 100%);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                 }
-                .brand-subtitle {
-                    font-size: 0.95rem;
-                    color: rgba(240, 247, 236, 0.8);
-                    line-height: 1.6;
-                    margin-bottom: 32px;
-                }
 
-                /* Features List */
-                .features-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 20px;
+                /* Educational Quote Container */
+                .quote-container {
+                    position: relative;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 20px;
+                    padding: 28px 30px;
                     margin-bottom: 32px;
+                    backdrop-filter: blur(10px);
                 }
-                .feature-item {
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 14px;
+                .quote-icon-top i {
+                    font-size: 2.2rem;
+                    color: #FE7F2D;
+                    opacity: 0.6;
+                    line-height: 1;
+                    display: block;
+                    margin-bottom: 8px;
                 }
-                .feature-icon {
-                    width: 38px;
-                    height: 38px;
-                    min-width: 38px;
-                    border-radius: 10px;
-                    background: rgba(255, 255, 255, 0.08);
-                    border: 1px solid rgba(255, 255, 255, 0.12);
+                .quote-text {
+                    font-size: 1.05rem;
+                    font-style: italic;
+                    line-height: 1.6;
+                    color: rgba(240, 247, 236, 0.95);
+                    margin-bottom: 16px;
+                    font-weight: 300;
+                }
+                .quote-author {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
+                    gap: 8px;
+                }
+                .author-dash {
                     color: #FE7F2D;
-                    font-size: 1.1rem;
+                    font-weight: bold;
                 }
-                .feature-text {
-                    display: flex;
-                    flex-direction: column;
-                }
-                .feature-text strong {
+                .author-name {
                     font-size: 0.92rem;
-                    font-weight: 600;
-                    color: #f0f7ec;
-                    margin-bottom: 2px;
-                }
-                .feature-text span {
-                    font-size: 0.8rem;
-                    color: rgba(255, 255, 255, 0.65);
-                    line-height: 1.4;
+                    font-weight: 700;
+                    color: #FE7F2D;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
                 }
 
                 .brand-footer-bar {
                     padding-top: 20px;
                     border-top: 1px solid rgba(255, 255, 255, 0.1);
-                    display: flex;
-                    align-items: center;
                 }
-                .security-tag {
-                    font-size: 0.78rem;
-                    color: rgba(255, 255, 255, 0.6);
+                .role-tags {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+                .role-tag {
+                    font-size: 0.74rem;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.75);
+                    background: rgba(255, 255, 255, 0.06);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    padding: 5px 12px;
+                    border-radius: 12px;
                     display: flex;
                     align-items: center;
                     gap: 6px;
                 }
-                .security-tag i {
+                .role-tag i {
                     color: #FE7F2D;
+                    font-size: 0.85rem;
                 }
 
                 /* Form Panel (Right) */
@@ -506,17 +515,17 @@ export default function LoginPage() {
                     margin-bottom: 28px;
                 }
                 .form-avatar-icon {
-                    width: 52px;
-                    height: 52px;
+                    width: 54px;
+                    height: 54px;
                     margin: 0 auto 14px;
-                    border-radius: 14px;
+                    border-radius: 16px;
                     background: rgba(33, 94, 97, 0.08);
-                    border: 1px solid rgba(33, 94, 97, 0.15);
+                    border: 1.5px solid rgba(33, 94, 97, 0.15);
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     color: #215E61;
-                    font-size: 1.5rem;
+                    font-size: 1.55rem;
                 }
                 .form-header h2 {
                     font-size: 1.75rem;
@@ -797,7 +806,7 @@ export default function LoginPage() {
                     height: 12px;
                     border-radius: 50%;
                     background: #10B981;
-                    border: 2px solid #152733;
+                    border: 2px solid #0f1c24;
                 }
                 .dev-meta {
                     display: flex;
