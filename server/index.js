@@ -12,7 +12,14 @@ const PORT = process.env.PORT || 5000;
 initScheduler();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: true, // Reflect request origin dynamically
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
+app.options('*', cors()); // Pre-flight options handler
+
 app.use(express.json());
 app.use('/uploads', express.static('uploads')); // Serve uploaded files
 
@@ -54,6 +61,12 @@ app.use('/attendance', require('./routes/attendance'));
 app.use('/exams', require('./routes/exams'));
 // Reports Module Routes
 app.use('/reports', require('./routes/reports'));
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error('Unhandled Server Error:', err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
+});
 
 app.get('/', (req, res) => {
     res.send('Smart School System API is running');
