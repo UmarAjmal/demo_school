@@ -144,76 +144,144 @@ export function DashShell({
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#eef5ec', padding: '36px 0 48px' }}>
+    <div style={{ minHeight: '100vh', background: '#f4f7f6', padding: '0 0 48px' }}>
+      {/* Top Green Hero Header - Flush top, rounded bottom corners */}
       <div className="dash-hero" style={{
-        background: 'linear-gradient(135deg,#1e3644 0%,#195053 100%)',
-        margin: '0 24px',
-        borderRadius: 24,
-        padding: '36px 36px 84px',
+        background: 'linear-gradient(135deg, #1e3644 0%, #195053 100%)',
+        padding: '24px 28px',
+        borderRadius: '0 0 24px 24px',
         position: 'relative' as const,
-        overflow: 'visible',
-        boxShadow: '0 10px 30px rgba(33,94,97,0.2)',
-        border: '1px solid rgba(255,255,255,0.1)',
+        overflow: 'hidden',
+        boxShadow: '0 6px 20px rgba(33,94,97,0.18)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
       }}>
-        {/* School Logo Avatar - Center Top Overlapping Header Edge */}
-        <div className="dash-logo-avatar-wrap" title="School Logo">
-          {logoUrl ? (
-            <img src={logoUrl} alt="School Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
-          ) : (
-            <span style={{ fontSize: '2.2rem' }}>🏫</span>
-          )}
-        </div>
+        {/* Background Ambient Accents */}
+        <div style={{ position: 'absolute' as const, top: -40, right: -40, width: 220, height: 220, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' as const }} />
+        <div style={{ position: 'absolute' as const, bottom: -60, right: 140, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' as const }} />
 
-        <div style={{ position: 'absolute' as const, top: -40, right: -40, width: 220, height: 220, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' as const, overflow: 'hidden' }} />
-        <div style={{ position: 'absolute' as const, bottom: -60, right: 140, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' as const, overflow: 'hidden' }} />
+        <div style={{ position: 'relative' as const, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 16 }}>
+          
+          {/* Left Side: Standard Logo Avatar + Title + Subtitle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0, flex: 1 }}>
+            <div className="dash-header-logo-avatar" title="School Logo">
+              {logoUrl ? (
+                <img src={logoUrl} alt="School Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '3px' }} />
+              ) : (
+                <span style={{ fontSize: '1.6rem' }}>🏫</span>
+              )}
+            </div>
 
-        <div style={{ position: 'relative' as const, zIndex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 16, marginTop: 6 }}>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>{title}</h1>
-            {subtitle && (
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className="bi bi-calendar3" style={{ fontSize: 11 }} />{subtitle}
-              </div>
-            )}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{title}</h1>
+              {subtitle && (
+                <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.7)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <i className="bi bi-calendar3" style={{ fontSize: 11 }} />{subtitle}
+                </div>
+              )}
+            </div>
           </div>
-          <div>
+
+          {/* Right Side: Quick Actions Dropdown */}
+          <div style={{ flexShrink: 0 }}>
             {actions || <QuickActionsDropdown />}
           </div>
         </div>
       </div>
 
-      <div className="dash-content" style={{ padding: '0 28px', marginTop: -54, position: 'relative' as const, zIndex: 2 }}>
+      {/* Main Content Area - Cards positioned cleanly BELOW the header */}
+      <div className="dash-content" style={{ padding: '0 28px', marginTop: 24, position: 'relative' as const, zIndex: 2 }}>
         {children}
       </div>
 
       <style jsx global>{`
-        .dash-logo-avatar-wrap {
-          position: absolute;
-          top: -42px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 84px;
-          height: 84px;
+        @keyframes dashFadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(18px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes dashHeroFade {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .dash-hero {
+          animation: dashHeroFade 0.4s ease-out forwards;
+        }
+
+        .dash-stat-grid > div {
+          animation: dashFadeInUp 0.45s ease-out forwards;
+          animation-fill-mode: both;
+        }
+
+        .dash-stat-grid > div:nth-child(1) { animation-delay: 0.04s; }
+        .dash-stat-grid > div:nth-child(2) { animation-delay: 0.08s; }
+        .dash-stat-grid > div:nth-child(3) { animation-delay: 0.12s; }
+        .dash-stat-grid > div:nth-child(4) { animation-delay: 0.16s; }
+        .dash-stat-grid > div:nth-child(5) { animation-delay: 0.20s; }
+
+        .dash-panel-card-animated {
+          animation: dashFadeInUp 0.55s ease-out forwards;
+          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease !important;
+        }
+
+        .dash-panel-card-animated:hover {
+          transform: translateY(-3px) !important;
+          box-shadow: 0 10px 28px rgba(35,61,77,0.12) !important;
+          border-color: rgba(33,94,97,0.2) !important;
+        }
+
+        .dash-header-logo-avatar {
+          width: 52px;
+          height: 52px;
           border-radius: 50%;
           background: #ffffff;
-          border: 4px solid #ffffff;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 20px rgba(254,127,45,0.35);
+          border: 3px solid rgba(255,255,255,0.95);
+          box-shadow: 0 4px 14px rgba(0,0,0,0.18), 0 0 12px rgba(254,127,45,0.25);
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 10;
+          flex-shrink: 0;
           cursor: pointer;
           overflow: hidden;
-          transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .dash-logo-avatar-wrap:hover {
-          transform: translateX(-50%) scale(1.15) rotate(6deg) !important;
-          box-shadow: 0 14px 35px rgba(0,0,0,0.3), 0 0 30px rgba(254,127,45,0.6) !important;
+
+        .dash-header-logo-avatar:hover {
+          transform: scale(1.12) rotate(5deg) !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.25), 0 0 20px rgba(254,127,45,0.6) !important;
           border-color: #FE7F2D !important;
         }
+
         .quick-action-item:hover {
           background: #f8fafc !important;
-          transform: translateX(3px);
+          transform: translateX(4px);
+        }
+
+        @media (max-width: 640px) {
+          .dash-hero {
+            padding: 18px 16px !important;
+            border-radius: 0 0 16px 16px !important;
+          }
+          .dash-content {
+            padding: 0 14px !important;
+            margin-top: 16px !important;
+          }
+          .dash-header-logo-avatar {
+            width: 44px !important;
+            height: 44px !important;
+          }
         }
       `}</style>
     </div>
@@ -317,7 +385,7 @@ export function Panel({
   action?: React.ReactNode; noPad?: boolean;
 }) {
   return (
-    <div style={{
+    <div className="dash-panel-card-animated" style={{
       background: '#fff', borderRadius: 18,
       boxShadow: '0 1px 3px rgba(0,0,0,0.05),0 4px 20px rgba(35,61,77,0.06)',
       border: '1px solid #f1f5f9', overflow: 'hidden',
