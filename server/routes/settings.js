@@ -105,28 +105,29 @@ router.post('/reset-database', async (req, res) => {
     }
 });
 
-// Upload School Logo
+// Upload School Logo (Stores Base64 Data URL directly in Postgres so Render restarts never wipe out the logo)
 router.post('/logo', upload.single('logo'), async (req, res) => {
     try {
-        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-        const logoUrl = `/uploads/${req.file.filename}`;
+        let logoUrl = '';
 
-        const check = await pool.query('SELECT id, logo_url FROM school_settings LIMIT 1');
+        if (req.body && req.body.logo_data) {
+            logoUrl = req.body.logo_data;
+        } else if (req.file) {
+            const fileBuffer = fs.readFileSync(req.file.path);
+            const base64Str = fileBuffer.toString('base64');
+            logoUrl = `data:${req.file.mimetype};base64,${base64Str}`;
+            try { fs.unlinkSync(req.file.path); } catch (e) {}
+        } else {
+            return res.status(400).json({ error: 'No logo file or data provided' });
+        }
+
+        const check = await pool.query('SELECT id FROM school_settings LIMIT 1');
         if (check.rows.length === 0) {
             await pool.query(
                 `INSERT INTO school_settings (logo_url) VALUES ($1)`,
                 [logoUrl]
             );
         } else {
-            // Optionally delete old logo file if it exists
-            const oldLogo = check.rows[0].logo_url;
-            if (oldLogo && oldLogo.startsWith('/uploads/')) {
-                const oldPath = path.join(__dirname, '..', oldLogo);
-                if (fs.existsSync(oldPath)) {
-                    try { fs.unlinkSync(oldPath); } catch (e) {}
-                }
-            }
-
             await pool.query(
                 `UPDATE school_settings SET logo_url = $1 WHERE id = $2`,
                 [logoUrl, check.rows[0].id]

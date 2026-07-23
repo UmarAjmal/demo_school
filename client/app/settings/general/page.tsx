@@ -33,7 +33,12 @@ export default function GeneralSettings() {
             .then(data => {
                 if (data && typeof data === 'object') {
                     setSettings(prev => ({ ...prev, ...data }));
-                    if (data.logo_url) setLogoPreview(`${API}${data.logo_url}?t=${Date.now()}`);
+                    if (data.logo_url) {
+                        const src = data.logo_url.startsWith('data:') || data.logo_url.startsWith('http')
+                            ? data.logo_url
+                            : `${API}${data.logo_url}?t=${Date.now()}`;
+                        setLogoPreview(src);
+                    }
                 }
                 setLoading(false);
             })
@@ -52,24 +57,32 @@ export default function GeneralSettings() {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
-        reader.readAsDataURL(file);
+        reader.onload = async (ev) => {
+            const base64Data = ev.target?.result as string;
+            if (!base64Data) return;
 
-        setUploadingLogo(true);
-        try {
-            const formData = new FormData();
-            formData.append('logo', file);
-            const res = await fetch(`${API}/settings/logo`, { method: 'POST', body: formData });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Upload failed');
-            setSettings(prev => ({ ...prev, logo_url: data.logo_url }));
-            setLogoPreview(`${API}${data.logo_url}?t=${Date.now()}`);
-            showToast.success('Logo uploaded successfully!');
-        } catch (err: any) {
-            showToast.error(err.message || 'Logo upload failed.');
-        } finally {
-            setUploadingLogo(false);
-        }
+            setLogoPreview(base64Data);
+            setUploadingLogo(true);
+            try {
+                const res = await fetch(`${API}/settings/logo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ logo_data: base64Data })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Upload failed');
+                
+                const savedLogo = data.logo_url || base64Data;
+                setSettings(prev => ({ ...prev, logo_url: savedLogo }));
+                setLogoPreview(savedLogo);
+                showToast.success('Logo uploaded and saved successfully!');
+            } catch (err: any) {
+                showToast.error(err.message || 'Logo upload failed.');
+            } finally {
+                setUploadingLogo(false);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -86,7 +99,10 @@ export default function GeneralSettings() {
                 const data = await res.json();
                 setSettings(prev => ({ ...prev, ...data }));
                 if (data.logo_url) {
-                    setLogoPreview(`${API}${data.logo_url}?t=${Date.now()}`);
+                    const src = data.logo_url.startsWith('data:') || data.logo_url.startsWith('http')
+                        ? data.logo_url
+                        : `${API}${data.logo_url}?t=${Date.now()}`;
+                    setLogoPreview(src);
                 } else {
                     setLogoPreview('');
                 }

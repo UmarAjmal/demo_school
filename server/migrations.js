@@ -43,7 +43,11 @@ async function runEssentialMigrations() {
             ADD COLUMN IF NOT EXISTS printed_at TIMESTAMP;
         `);
 
-        // 4. IMPORTANT: We do NOT use father_name to infer relation_type.
+        // 6. School Settings logo_url Migration (allow storing Base64 image data in DB)
+        console.log("   → Checking school_settings logo_url column type...");
+        await client.query(`
+            ALTER TABLE school_settings ALTER COLUMN logo_url TYPE TEXT;
+        `);
         //    Father name matching is unreliable in Pakistani naming conventions where
         //    cousins often share the same grandfather's name as their father name.
         //

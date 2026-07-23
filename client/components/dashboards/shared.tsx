@@ -137,7 +137,10 @@ export function DashShell({
       .then(res => res.json())
       .then(data => {
         if (data && data.logo_url) {
-          setLogoUrl(`${API}${data.logo_url}?t=${Date.now()}`);
+          const src = data.logo_url.startsWith('data:') || data.logo_url.startsWith('http')
+            ? data.logo_url
+            : `${API}${data.logo_url}?t=${Date.now()}`;
+          setLogoUrl(src);
         }
       })
       .catch(() => {});
