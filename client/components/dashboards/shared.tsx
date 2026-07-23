@@ -156,6 +156,7 @@ export function DashShell({
         padding: '24px 28px',
         borderRadius: '0 0 24px 24px',
         position: 'relative' as const,
+        zIndex: 50,
         overflow: 'visible',
         boxShadow: '0 6px 20px rgba(33,94,97,0.18)',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
@@ -196,7 +197,7 @@ export function DashShell({
       </div>
 
       {/* Main Content Area - Cards positioned cleanly BELOW the header */}
-      <div className="dash-content" style={{ padding: '0 28px', marginTop: 24, position: 'relative' as const, zIndex: 2 }}>
+      <div className="dash-content" style={{ padding: '0 28px', marginTop: 24, position: 'relative' as const, zIndex: 1 }}>
         {children}
       </div>
 
