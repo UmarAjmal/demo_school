@@ -106,7 +106,12 @@ router.post('/reset-database', async (req, res) => {
 });
 
 // Upload School Logo (Stores Base64 Data URL directly in Postgres so Render restarts never wipe out the logo)
-router.post('/logo', upload.single('logo'), async (req, res) => {
+router.post('/logo', (req, res, next) => {
+    if (req.is('json') || (req.headers['content-type'] && req.headers['content-type'].includes('application/json'))) {
+        return next();
+    }
+    upload.single('logo')(req, res, next);
+}, async (req, res) => {
     try {
         let logoUrl = '';
 
