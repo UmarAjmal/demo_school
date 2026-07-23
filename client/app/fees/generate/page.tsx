@@ -396,8 +396,8 @@ export default function FeeGeneratePage() {
                             </div>
                             <div className="mb-3">
                                 <label className="form-label fw-bold small text-muted">Year <span className="text-danger">*</span></label>
-                                <input type="number" className="form-control" value={selectedYear}
-                                    onChange={e => setSelectedYear(e.target.value)} />
+                                <input type="text" inputMode="numeric" className="form-control" value={selectedYear}
+                                    onChange={e => setSelectedYear(e.target.value.replace(/[^0-9]/g, ''))} />
                             </div>
                             <div className="row g-2 mb-3">
                                 <div className="col-6">
@@ -508,8 +508,8 @@ export default function FeeGeneratePage() {
                                                 <div className="col-7">
                                                     <div className="input-group input-group-sm">
                                                         <span className="input-group-text bg-light">PKR</span>
-                                                        <input type="number" className="form-control" value={head.amount}
-                                                            onChange={e => updateExtra(i, 'amount', e.target.value)} placeholder="0" />
+                                                        <input type="text" inputMode="decimal" className="form-control" value={head.amount}
+                                                            onChange={e => updateExtra(i, 'amount', e.target.value.replace(/[^0-9.]/g, ''))} placeholder="0" />
                                                     </div>
                                                 </div>
                                                 <div className="col-5">
@@ -715,9 +715,8 @@ export default function FeeGeneratePage() {
                                             <div className="col-4">
                                                 <div className="input-group input-group-sm">
                                                     <span className="input-group-text bg-light">PKR</span>
-                                                    <input type="number" className="form-control" value={item.amount}
-                                                        onChange={e => setEditItems(p => p.map((x, j) => j === i ? { ...x, amount: e.target.value } : x))}
-                                                        min="0" />
+                                                    <input type="text" inputMode="decimal" className="form-control" value={item.amount}
+                                                        onChange={e => setEditItems(p => p.map((x, j) => j === i ? { ...x, amount: e.target.value.replace(/[^0-9.]/g, '') } : x))} />
                                                 </div>
                                             </div>
                                             <div className="col-2">

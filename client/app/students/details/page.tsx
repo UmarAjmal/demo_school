@@ -484,8 +484,8 @@ export default function StudentDetails() {
                                 </div>
                                 <div className="col-md-2">
                                     <label className="form-label small text-muted text-uppercase fw-bold">Age (Years)</label>
-                                    <input type="number" className="form-control form-control-sm" placeholder="e.g. 15"
-                                        value={filters.age} onChange={e => setFilters({ ...filters, age: e.target.value })} />
+                                    <input type="text" inputMode="numeric" className="form-control form-control-sm" placeholder="e.g. 15"
+                                        value={filters.age} onChange={e => setFilters({ ...filters, age: e.target.value.replace(/[^0-9]/g, '') })} />
                                 </div>
                                 <div className="col-12 text-end">
                                     <button type="button" className="btn btn-link text-muted text-decoration-none btn-sm"

@@ -411,8 +411,8 @@ export default function FeePlansPage() {
                                                                         ) : (
                                                                             <div className="input-group input-group-sm">
                                                                                 <span className="input-group-text bg-light">PKR</span>
-                                                                                <input type="number" className="form-control" value={sel.amount} min="0"
-                                                                                    onChange={e => updateHeadAmount(head.head_id, e.target.value)}
+                                                                                <input type="text" inputMode="decimal" className="form-control" value={sel.amount}
+                                                                                    onChange={e => updateHeadAmount(head.head_id, e.target.value.replace(/[^0-9.]/g, ''))}
                                                                                     placeholder="0.00" onClick={e => e.stopPropagation()} />
                                                                             </div>
                                                                         )

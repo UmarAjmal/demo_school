@@ -392,7 +392,7 @@ export default function EmployeesPage() {
                                                 <label className="form-label small fw-bold">Salary (PKR)</label>
                                                 <div className="input-group">
                                                     <span className="input-group-text">$</span>
-                                                    <input type="number" className="form-control" value={formData.salary} onChange={e => setFormData({ ...formData, salary: e.target.value })} />
+                                                    <input type="text" inputMode="decimal" className="form-control" value={formData.salary} onChange={e => setFormData({ ...formData, salary: e.target.value.replace(/[^0-9.]/g, '') })} />
                                                 </div>
                                             </div>
 

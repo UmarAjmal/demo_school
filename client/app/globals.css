@@ -1,4 +1,4 @@
-﻿* {
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -46,6 +46,17 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+}
+
+/* Hide spin-buttons / counter arrows on numeric inputs globally */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+input[type=number] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
 }
 
 /* Bootstrap Overrides & Utilities */

@@ -395,10 +395,9 @@ export default function TestMarkingPage() {
                                 <div className="col-md-2">
                                     <label className="form-label fw-semibold">Total Marks <span className="text-danger">*</span></label>
                                     <input
-                                        type="number" className="form-control"
+                                        type="text" inputMode="decimal" className="form-control"
                                         placeholder="e.g. 50"
-                                        value={formTotal} onChange={e => setFormTotal(e.target.value)}
-                                        min={1}
+                                        value={formTotal} onChange={e => setFormTotal(e.target.value.replace(/[^0-9.]/g, ''))}
                                     />
                                 </div>
                                 <div className="col-md-2">
@@ -570,14 +569,12 @@ export default function TestMarkingPage() {
                                                                 </span>
                                                             ) : (
                                                                 <input
-                                                                    type="number"
+                                                                    type="text"
+                                                                    inputMode="decimal"
                                                                     className={`form-control form-control-sm text-center${isInvalid ? ' is-invalid' : ''}`}
                                                                     style={{ width: 100, margin: '0 auto' }}
-                                                                    min={0}
-                                                                    max={Number(sheet.test.total_marks)}
-                                                                    step="0.5"
                                                                     value={obtained}
-                                                                    onChange={e => setObtainedMap(prev => ({ ...prev, [s.student_id]: e.target.value }))}
+                                                                    onChange={e => setObtainedMap(prev => ({ ...prev, [s.student_id]: e.target.value.replace(/[^0-9.]/g, '') }))}
                                                                     placeholder="—"
                                                                 />
                                                             )}

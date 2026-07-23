@@ -197,12 +197,11 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                                     <div className="input-group">
                                         <span className="input-group-text bg-light fw-bold">PKR</span>
                                         <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
+                                            type="text"
+                                            inputMode="decimal"
                                             className="form-control"
                                             value={formData.amount}
-                                            onChange={(e) => handleChange('amount', e.target.value)}
+                                            onChange={(e) => handleChange('amount', e.target.value.replace(/[^0-9.]/g, ''))}
                                             placeholder="0.00"
                                             required
                                         />

@@ -391,11 +391,11 @@ export default function ExaminationMarksPage() {
                             <div className="input-group input-group-sm" style={{ width: 180 }}>
                                 <span className="input-group-text">Out of</span>
                                 <input
-                                    type="number"
+                                    type="text"
+                                    inputMode="decimal"
                                     className="form-control"
                                     value={totalMarks}
-                                    min={1}
-                                    onChange={(e) => setTotalMarks(e.target.value)}
+                                    onChange={(e) => setTotalMarks(e.target.value.replace(/[^0-9.]/g, ''))}
                                     disabled={sheetReadonly || saving || loadingSheet}
                                 />
                             </div>
@@ -465,14 +465,12 @@ export default function ExaminationMarksPage() {
                                                 <td>{s.first_name} {s.last_name}</td>
                                                 <td>
                                                     <input
-                                                        type="number"
+                                                        type="text"
+                                                        inputMode="decimal"
                                                         className="form-control form-control-sm"
-                                                        min={0}
-                                                        max={Number(totalMarks) || undefined}
-                                                        step="0.01"
                                                         value={obtainedMap[s.student_id] ?? ''}
                                                         disabled={sheetReadonly || saving || loadingSheet}
-                                                        onChange={(e) => handleObtainedChange(s.student_id, e.target.value)}
+                                                        onChange={(e) => handleObtainedChange(s.student_id, e.target.value.replace(/[^0-9.]/g, ''))}
                                                     />
                                                 </td>
                                             </tr>

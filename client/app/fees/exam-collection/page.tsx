@@ -398,12 +398,11 @@ export default function ExamCollectionPage() {
                         <div className="col-md-2">
                             <label className="form-label fw-semibold">Amount (Rs.)</label>
                             <input
-                                type="number"
+                                type="text"
+                                inputMode="decimal"
                                 className="form-control"
                                 value={collectionAmount}
-                                onChange={e => setCollectionAmount(e.target.value)}
-                                min={0}
-                                step="0.01"
+                                onChange={e => setCollectionAmount(e.target.value.replace(/[^0-9.]/g, ''))}
                             />
                         </div>
 

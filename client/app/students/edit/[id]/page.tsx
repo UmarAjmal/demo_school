@@ -575,9 +575,9 @@ export default function EditStudent({ params }: { params: { id: string } }) {
                                                 </div>
                                                 <div className="input-group">
                                                     <span className="input-group-text">Rs.</span>
-                                                    <input type="number" className="form-control form-control-lg" placeholder="0.00" required
+                                                    <input type="text" inputMode="decimal" className="form-control form-control-lg" placeholder="0.00" required
                                                         value={form.family_fee}
-                                                        onChange={e => setForm({ ...form, family_fee: e.target.value })} />
+                                                        onChange={e => setForm({ ...form, family_fee: e.target.value.replace(/[^0-9.]/g, '') })} />
                                                 </div>
                                                 <small className="text-muted">
                                                     <i className="bi bi-info-circle me-1"></i>
@@ -588,16 +588,16 @@ export default function EditStudent({ params }: { params: { id: string } }) {
                                                 <label className="form-label fw-bold">Admission Fee (Paid)</label>
                                                 <div className="input-group">
                                                     <span className="input-group-text">Rs.</span>
-                                                    <input type="number" className="form-control" placeholder="0.00"
-                                                        value={form.admission_fee} onChange={e => setForm({ ...form, admission_fee: e.target.value })} />
+                                                    <input type="text" inputMode="decimal" className="form-control" placeholder="0.00"
+                                                        value={form.admission_fee} onChange={e => setForm({ ...form, admission_fee: e.target.value.replace(/[^0-9.]/g, '') })} />
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
                                                 <label className="form-label fw-bold">Other Charges</label>
                                                 <div className="input-group">
                                                     <span className="input-group-text">Rs.</span>
-                                                    <input type="number" className="form-control" placeholder="0.00"
-                                                        value={form.other_charges} onChange={e => setForm({ ...form, other_charges: e.target.value })} />
+                                                    <input type="text" inputMode="decimal" className="form-control" placeholder="0.00"
+                                                        value={form.other_charges} onChange={e => setForm({ ...form, other_charges: e.target.value.replace(/[^0-9.]/g, '') })} />
                                                 </div>
                                             </div>
                                         </div>
@@ -609,24 +609,24 @@ export default function EditStudent({ params }: { params: { id: string } }) {
                                             <label className="form-label fw-bold display-6 fs-5">Monthly Tuition Fee</label>
                                             <div className="input-group">
                                                 <span className="input-group-text">Rs.</span>
-                                                <input type="number" className="form-control form-control-lg" placeholder="0.00" required
-                                                    value={form.monthly_fee} onChange={e => setForm({ ...form, monthly_fee: e.target.value })} />
+                                                <input type="text" inputMode="decimal" className="form-control form-control-lg" placeholder="0.00" required
+                                                    value={form.monthly_fee} onChange={e => setForm({ ...form, monthly_fee: e.target.value.replace(/[^0-9.]/g, '') })} />
                                             </div>
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label fw-bold">Admission Fee (Paid)</label>
                                             <div className="input-group">
                                                 <span className="input-group-text">Rs.</span>
-                                                <input type="number" className="form-control" placeholder="0.00"
-                                                    value={form.admission_fee} onChange={e => setForm({ ...form, admission_fee: e.target.value })} />
+                                                <input type="text" inputMode="decimal" className="form-control" placeholder="0.00"
+                                                    value={form.admission_fee} onChange={e => setForm({ ...form, admission_fee: e.target.value.replace(/[^0-9.]/g, '') })} />
                                             </div>
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label fw-bold">Other Charges</label>
                                             <div className="input-group">
                                                 <span className="input-group-text">Rs.</span>
-                                                <input type="number" className="form-control" placeholder="0.00"
-                                                    value={form.other_charges} onChange={e => setForm({ ...form, other_charges: e.target.value })} />
+                                                <input type="text" inputMode="decimal" className="form-control" placeholder="0.00"
+                                                    value={form.other_charges} onChange={e => setForm({ ...form, other_charges: e.target.value.replace(/[^0-9.]/g, '') })} />
                                             </div>
                                         </div>
                                     </div>

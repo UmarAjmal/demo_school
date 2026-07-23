@@ -748,19 +748,15 @@ export default function AdmissionFeePage() {
                           PKR
                         </span>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="decimal"
                           className="form-control fw-bold fs-5"
                           required
-                          min="0"
-                          max={
-                            selectedLedger.remaining_amount -
-                            (parseFloat(payForm.discount_amount) || 0)
-                          }
                           value={payForm.amount_paid}
                           onChange={(e) =>
                             setPayForm((p) => ({
                               ...p,
-                              amount_paid: e.target.value,
+                              amount_paid: e.target.value.replace(/[^0-9.]/g, ''),
                             }))
                           }
                           placeholder="0"
@@ -783,20 +779,20 @@ export default function AdmissionFeePage() {
                           PKR
                         </span>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="decimal"
                           className="form-control fw-bold fs-5"
-                          min="0"
-                          max={selectedLedger.remaining_amount}
                           value={payForm.discount_amount}
                           onChange={(e) => {
-                            const disc = parseFloat(e.target.value) || 0;
+                            const cleanVal = e.target.value.replace(/[^0-9.]/g, '');
+                            const disc = parseFloat(cleanVal) || 0;
                             const newPaid = Math.max(
                               0,
                               selectedLedger.remaining_amount - disc,
                             );
                             setPayForm((p) => ({
                               ...p,
-                              discount_amount: e.target.value,
+                              discount_amount: cleanVal,
                               amount_paid: newPaid.toString(),
                             }));
                           }}
@@ -824,19 +820,21 @@ export default function AdmissionFeePage() {
                           <div className="col-md-6">
                             <label className="form-label fw-bold small text-muted">Tuition Amount</label>
                             <input
-                              type="number"
+                              type="text"
+                              inputMode="decimal"
                               className="form-control"
                               value={tuitionAmount}
-                              onChange={(e) => setTuitionAmount(e.target.value)}
+                              onChange={(e) => setTuitionAmount(e.target.value.replace(/[^0-9.]/g, ''))}
                             />
                           </div>
                           <div className="col-md-6">
                             <label className="form-label fw-bold small text-muted">Tuition Received</label>
                             <input
-                              type="number"
+                              type="text"
+                              inputMode="decimal"
                               className="form-control text-success fw-bold"
                               value={tuitionReceived}
-                              onChange={(e) => setTuitionReceived(e.target.value)}
+                              onChange={(e) => setTuitionReceived(e.target.value.replace(/[^0-9.]/g, ''))}
                             />
                           </div>
                           <div className="col-12">

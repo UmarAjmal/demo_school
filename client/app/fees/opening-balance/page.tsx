@@ -402,8 +402,9 @@ export default function OpeningBalancePage() {
                                     <div className="input-group">
                                         <span className="input-group-text bg-white"><i className="bi bi-wallet2" style={{ color: 'var(--accent-orange)' }} /></span>
                                         <span className="input-group-text bg-white fw-semibold">Rs.</span>
-                                        <input type="number" className="form-control rounded-end-3" min="0" step="1" placeholder="0"
-                                            value={setForm.opening_balance} onChange={e => setSetForm({ ...setForm, opening_balance: e.target.value })}
+                                        <input type="text" inputMode="decimal" className="form-control rounded-end-3" placeholder="0"
+                                            value={setForm.opening_balance} 
+                                            onChange={e => setSetForm({ ...setForm, opening_balance: e.target.value.replace(/[^0-9.]/g, '') })}
                                             style={{ border: '1.5px solid #dee2e6', borderLeft: 'none' }} autoFocus />
                                     </div>
                                     <small className="text-muted">Total previous dues of this family before software was installed.</small>
