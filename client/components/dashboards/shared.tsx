@@ -23,8 +23,10 @@ export function QuickActionsDropdown() {
     { href: '/attendance/students', label: 'Take Attendance', sub: 'Mark student attendance',    icon: 'bi-calendar-check-fill',  color: '#06b6d4' },
     { href: '/academic/classes',    label: 'Manage Classes',  sub: 'Classes & sections setup',   icon: 'bi-building',             color: '#8b5cf6' },
     { href: '/hrm/employees',       label: 'Employees / Staff',sub: 'Manage staff & teachers',   icon: 'bi-person-badge-fill',    color: '#ec4899' },
+    { href: '/examination/marks',   label: 'Exam Marks',       sub: 'Record student exam marks',  icon: 'bi-journal-check',        color: '#14b8a6' },
     { href: '/reports/students',    label: 'Reports',          sub: 'Financial & academic data',  icon: 'bi-bar-chart-fill',       color: '#f59e0b' },
     { href: '/expenses/add',        label: 'Add Expense',      sub: 'Record operational expense', icon: 'bi-wallet2',              color: '#ef4444' },
+    { href: '/settings/general',    label: 'School Settings',  sub: 'School info & logo setup',   icon: 'bi-gear-fill',            color: '#64748b' },
   ];
 
   return (
@@ -154,13 +156,15 @@ export function DashShell({
         padding: '24px 28px',
         borderRadius: '0 0 24px 24px',
         position: 'relative' as const,
-        overflow: 'hidden',
+        overflow: 'visible',
         boxShadow: '0 6px 20px rgba(33,94,97,0.18)',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
       }}>
-        {/* Background Ambient Accents */}
-        <div style={{ position: 'absolute' as const, top: -40, right: -40, width: 220, height: 220, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' as const }} />
-        <div style={{ position: 'absolute' as const, bottom: -60, right: 140, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' as const }} />
+        {/* Background Ambient Accents Container */}
+        <div style={{ position: 'absolute' as const, inset: 0, overflow: 'hidden', borderRadius: '0 0 24px 24px', pointerEvents: 'none' as const }}>
+          <div style={{ position: 'absolute' as const, top: -40, right: -40, width: 220, height: 220, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' as const }} />
+          <div style={{ position: 'absolute' as const, bottom: -60, right: 140, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' as const }} />
+        </div>
 
         <div style={{ position: 'relative' as const, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 16 }}>
           
