@@ -31,8 +31,10 @@ export default function GeneralSettings() {
         fetch(`${API}/settings`)
             .then(res => res.json())
             .then(data => {
-                if (data && data.school_name) setSettings(data);
-                if (data && data.logo_url) setLogoPreview(`${API}${data.logo_url}`);
+                if (data && typeof data === 'object') {
+                    setSettings(prev => ({ ...prev, ...data }));
+                    if (data.logo_url) setLogoPreview(`${API}${data.logo_url}?t=${Date.now()}`);
+                }
                 setLoading(false);
             })
             .catch(err => {
@@ -73,7 +75,6 @@ export default function GeneralSettings() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        await new Promise(r => setTimeout(r, 400));
         try {
             const res = await fetch(`${API}/settings`, {
                 method: 'PUT',
@@ -83,7 +84,12 @@ export default function GeneralSettings() {
             if (res.ok) {
                 showToast.success('Configuration saved successfully!');
                 const data = await res.json();
-                setSettings(data);
+                setSettings(prev => ({ ...prev, ...data }));
+                if (data.logo_url) {
+                    setLogoPreview(`${API}${data.logo_url}?t=${Date.now()}`);
+                } else {
+                    setLogoPreview('');
+                }
             } else {
                 showToast.error('Failed to update settings.');
             }

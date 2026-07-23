@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Multer storage – save to uploads/ with original extension
+// Multer storage – save to uploads/ with unique filename to prevent browser caching
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = path.join(__dirname, '../uploads');
@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname).toLowerCase();
-        cb(null, `school_logo${ext}`);
+        cb(null, `school_logo_${Date.now()}${ext}`);
     }
 });
 const upload = multer({
@@ -44,7 +44,7 @@ router.put('/', async (req, res) => {
     try {
         const { 
             school_name, address, contact_number, email, 
-            tagline, website, facebook_link, twitter_link, instagram_link 
+            tagline, website, logo_url, facebook_link, twitter_link, instagram_link 
         } = req.body;
 
         // Check if settings exist
@@ -55,21 +55,22 @@ router.put('/', async (req, res) => {
             // Insert
             result = await pool.query(
                 `INSERT INTO school_settings 
-                (school_name, address, contact_number, email, tagline, website, facebook_link, twitter_link, instagram_link) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+                (school_name, address, contact_number, email, tagline, website, logo_url, facebook_link, twitter_link, instagram_link) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
                 RETURNING *`,
-                [school_name, address, contact_number, email, tagline, website, facebook_link, twitter_link, instagram_link]
+                [school_name, address, contact_number, email, tagline, website, logo_url || null, facebook_link, twitter_link, instagram_link]
             );
         } else {
             // Update
-            const id = check.rows[0].id;
+            const existing = check.rows[0];
+            const finalLogoUrl = logo_url !== undefined ? logo_url : existing.logo_url;
             result = await pool.query(
                 `UPDATE school_settings 
                 SET school_name = $1, address = $2, contact_number = $3, email = $4, 
-                    tagline = $5, website = $6, facebook_link = $7, twitter_link = $8, instagram_link = $9
-                WHERE id = $10 
+                    tagline = $5, website = $6, logo_url = $7, facebook_link = $8, twitter_link = $9, instagram_link = $10
+                WHERE id = $11 
                 RETURNING *`,
-                [school_name, address, contact_number, email, tagline, website, facebook_link, twitter_link, instagram_link, id]
+                [school_name, address, contact_number, email, tagline, website, finalLogoUrl, facebook_link, twitter_link, instagram_link, existing.id]
             );
         }
 
@@ -110,13 +111,22 @@ router.post('/logo', upload.single('logo'), async (req, res) => {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
         const logoUrl = `/uploads/${req.file.filename}`;
 
-        const check = await pool.query('SELECT id FROM school_settings LIMIT 1');
+        const check = await pool.query('SELECT id, logo_url FROM school_settings LIMIT 1');
         if (check.rows.length === 0) {
             await pool.query(
                 `INSERT INTO school_settings (logo_url) VALUES ($1)`,
                 [logoUrl]
             );
         } else {
+            // Optionally delete old logo file if it exists
+            const oldLogo = check.rows[0].logo_url;
+            if (oldLogo && oldLogo.startsWith('/uploads/')) {
+                const oldPath = path.join(__dirname, '..', oldLogo);
+                if (fs.existsSync(oldPath)) {
+                    try { fs.unlinkSync(oldPath); } catch (e) {}
+                }
+            }
+
             await pool.query(
                 `UPDATE school_settings SET logo_url = $1 WHERE id = $2`,
                 [logoUrl, check.rows[0].id]
