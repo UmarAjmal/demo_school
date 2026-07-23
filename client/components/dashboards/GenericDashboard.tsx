@@ -40,7 +40,7 @@ export default function GenericDashboard({ userName, role }: { userName:string; 
 
   const s = data.stats;
   return (
-    <DashShell title={'Welcome, ' + userName} greeting={role} subtitle={today}>
+    <DashShell title="School Dashboard" subtitle={today}>
 
       {/* Stats */}
       <div className="dash-stat-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:14, marginBottom:20 }}>

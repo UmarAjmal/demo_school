@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
@@ -56,26 +56,7 @@ export default function AccountantDashboard({ userName }: { userName: string }) 
   return (
     <DashShell
       title="Finance & Fees"
-      greeting={'Welcome, ' + userName}
       subtitle={today}
-      actions={<>
-        <Link href="/fees/collect" style={{
-          display:'flex', alignItems:'center', gap:7,
-          background:C.orange, color:'#fff', borderRadius:12,
-          padding:'10px 20px', fontWeight:700, fontSize:13, textDecoration:'none',
-          boxShadow:'0 4px 14px rgba(254,127,45,0.4)',
-        }}>
-          <i className="bi bi-cash-coin" /> Collect Fee
-        </Link>
-        <Link href="/fees/generate" style={{
-          display:'flex', alignItems:'center', gap:7,
-          background:'rgba(255,255,255,0.18)', color:'#fff', border:'1px solid rgba(255,255,255,0.3)',
-          borderRadius:12, padding:'10px 20px', fontWeight:700, fontSize:13, textDecoration:'none',
-          backdropFilter:'blur(8px)',
-        }}>
-          <i className="bi bi-file-earmark-plus" /> Generate Slips
-        </Link>
-      </>}
     >
       {/* KPI Row */}
         {hasPermission('dash.acc_kpi', 'read') && (

@@ -58,19 +58,8 @@ export default function TeacherDashboard({ userId }: { userId: number }) {
 
   return (
     <DashShell
-      title={'Welcome, ' + t.name}
-      greeting={t.designation || 'Teacher'}
+      title="Teacher Portal"
       subtitle={today}
-      actions={
-        <Link href="/attendance/students" style={{
-          display:'flex', alignItems:'center', gap:7,
-          background:C.orange, color:'#fff', borderRadius:12,
-          padding:'10px 20px', fontWeight:700, fontSize:13, textDecoration:'none',
-          boxShadow:'0 4px 14px rgba(254,127,45,0.4)',
-        }}>
-          <i className="bi bi-calendar-check-fill" /> Mark Attendance
-        </Link>
-      }
     >
       {/* KPI Row */}
         {hasPermission('dash.teacher_kpi', 'read') && (

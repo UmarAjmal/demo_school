@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
@@ -87,13 +87,7 @@ export default function AdminDashboard({ userName }: { userName: string }) {  co
   return (
     <DashShell
       title="School Dashboard"
-      greeting={'Welcome back, ' + userName}
       subtitle={today}
-      actions={<>
-        <ActionBtn href="/students/admission"  icon="bi-person-plus-fill"    label="New Admission" primary />
-        <ActionBtn href="/attendance/students" icon="bi-calendar-check-fill" label="Attendance" />
-        <ActionBtn href="/fees/collect"        icon="bi-cash-coin"           label="Collect Fee" />
-      </>}
     >
       {/* KPI Row */}
       {hasPermission('dash.admin_kpi', 'read') && (
