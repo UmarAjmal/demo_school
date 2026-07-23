@@ -56,6 +56,11 @@ export default function GeneralSettings() {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        if (file.size > 20 * 1024 * 1024) {
+            showToast.error('File size exceeds the 20 MB limit.');
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = async (ev) => {
             const base64Data = ev.target?.result as string;
@@ -156,7 +161,7 @@ export default function GeneralSettings() {
                             </div>
                             <div>
                                 <p style={{ color: 'var(--text-gray-medium)', fontSize: '0.9rem', marginBottom: 10 }}>
-                                    Upload a PNG, JPG or SVG. Max 2&nbsp;MB.<br />
+                                    Upload a PNG, JPG, WEBP or SVG. Max 20&nbsp;MB.<br />
                                     This logo will appear on Result Cards and Marks Sheets.
                                 </p>
                                 <input
