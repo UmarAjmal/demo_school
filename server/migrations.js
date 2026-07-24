@@ -81,6 +81,15 @@ async function runEssentialMigrations() {
         `);
         console.log(`   ✓ Repaired ${repairResult.rowCount} incorrectly marked blood sibling rows.`);
 
+        // 7. Subjects Term Association Migration
+        console.log("   → Checking subjects term_id column & constraints...");
+        await client.query(`
+            ALTER TABLE subjects ADD COLUMN IF NOT EXISTS term_id INTEGER REFERENCES academic_terms(id) ON DELETE SET NULL;
+            ALTER TABLE subjects DROP CONSTRAINT IF EXISTS subjects_section_id_subject_name_key;
+            ALTER TABLE subjects DROP CONSTRAINT IF EXISTS subjects_section_term_subject_name_key;
+            ALTER TABLE subjects ADD CONSTRAINT subjects_section_term_subject_name_key UNIQUE (section_id, subject_name, term_id);
+        `);
+
         await client.query('COMMIT');
         console.log("✅ All essential migrations completed successfully!");
     } catch (err) {
