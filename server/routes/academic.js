@@ -142,7 +142,7 @@ router.put('/years/activate/:id', async (req, res) => {
 });
 
 // Get Terms for Active Academic Year (or All Terms)
-router.get('/terms-all', async (req, res) => {
+const getActiveTermsHandler = async (req, res) => {
     try {
         const query = `
             SELECT t.id, t.term_name, t.academic_year_id, y.year_name, y.is_active
@@ -165,7 +165,11 @@ router.get('/terms-all', async (req, res) => {
         console.error(err.message);
         res.status(500).json({ error: "Server Error" });
     }
-});
+};
+
+router.get('/terms/active', getActiveTermsHandler);
+router.get('/terms-all', getActiveTermsHandler);
+router.get('/active-terms', getActiveTermsHandler);
 
 // Get Terms for a Year
 router.get('/terms/:yearId', async (req, res) => {

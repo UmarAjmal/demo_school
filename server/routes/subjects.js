@@ -5,6 +5,32 @@ const pool = require('../db');
 // SUBJECTS API
 // ==========================================
 
+// Get Active Terms for Subjects Dropdown
+router.get('/terms', async (req, res) => {
+    try {
+        const query = `
+            SELECT t.id, t.term_name, t.academic_year_id, y.year_name, y.is_active
+            FROM academic_terms t
+            JOIN academic_years y ON t.academic_year_id = y.id
+            WHERE y.is_active = true OR y.status = 'active'
+            ORDER BY t.id ASC
+        `;
+        let result = await pool.query(query);
+        if (result.rows.length === 0) {
+            result = await pool.query(`
+                SELECT t.id, t.term_name, t.academic_year_id, y.year_name, y.is_active
+                FROM academic_terms t
+                LEFT JOIN academic_years y ON t.academic_year_id = y.id
+                ORDER BY t.id ASC
+            `);
+        }
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server Error" });
+    }
+});
+
 // List All Subjects
 router.get('/', async (req, res) => {
     try {

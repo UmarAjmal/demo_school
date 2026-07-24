@@ -98,12 +98,19 @@ export default function SubjectSettings() {
 
     const fetchTerms = async () => {
         try {
-            const res = await fetch(`${API_BASE}/academic/terms-all`);
+            let fetchedTerms: TermItem[] = [];
+            let res = await fetch(`${API_BASE}/academic/subjects/terms`);
+            if (!res.ok) res = await fetch(`${API_BASE}/academic/terms/active`);
+            if (!res.ok) res = await fetch(`${API_BASE}/academic/terms-all`);
+
             if (res.ok) {
-                const data = await res.json();
-                setTerms(data);
+                fetchedTerms = await res.json();
+                setTerms(fetchedTerms);
+                if (fetchedTerms.length > 0) {
+                    setForm(prev => prev.term_id ? prev : { ...prev, term_id: fetchedTerms[0].id.toString() });
+                }
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Fetch terms error:", e); }
     };
 
     // Derived Data for UI
