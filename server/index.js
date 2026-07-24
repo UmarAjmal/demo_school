@@ -31,6 +31,8 @@ app.use('/dashboard', require('./routes/dashboard'));
 app.use('/students', require('./routes/students'));
 // HRM Routes
 app.use('/hrm', require('./routes/hrm'));
+// Academic Routes & Terms
+app.use('/academic', require('./routes/academic'));
 // Classes/Sections Routes
 app.use('/academic', require('./routes/classes'));
 // Subjects Routes
@@ -39,8 +41,6 @@ app.use('/academic/subjects', require('./routes/subjects'));
 app.use('/academic/teachers', require('./routes/teachers'));
 // Settings Routes
 app.use('/settings', require('./routes/settings'));
-// Academic Routes
-app.use('/academic', require('./routes/academic'));
 app.use('/promotion', require('./routes/promotion'));
 // Auth Routes
 app.use('/auth', require('./routes/auth'));

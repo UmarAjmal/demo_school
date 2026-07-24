@@ -175,7 +175,14 @@ router.get('/active-terms', getActiveTermsHandler);
 router.get('/terms/:yearId', async (req, res) => {
     try {
         const { yearId } = req.params;
-        const result = await pool.query("SELECT * FROM academic_terms WHERE academic_year_id = $1 ORDER BY id ASC", [yearId]);
+        if (yearId === 'active' || yearId === 'all') {
+            return getActiveTermsHandler(req, res);
+        }
+        const numericYearId = parseInt(yearId, 10);
+        if (isNaN(numericYearId)) {
+            return getActiveTermsHandler(req, res);
+        }
+        const result = await pool.query("SELECT * FROM academic_terms WHERE academic_year_id = $1 ORDER BY id ASC", [numericYearId]);
         res.json(result.rows);
     } catch (err) {
         console.error(err.message);
