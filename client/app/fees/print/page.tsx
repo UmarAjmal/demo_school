@@ -262,17 +262,19 @@ export default function PrintSlipsPage() {
 
     useEffect(() => {
         fetch(`${API}/academic`).then(r => r.json()).then(setClasses).catch(() => { });
-        // School info lives in school_settings table (via /settings), NOT system_settings
         fetch(`${API}/settings`).then(r => r.json()).then((data: any) => {
             if (data && typeof data === 'object' && !Array.isArray(data)) {
+                let logoUrl = data.logo_url || '';
+                if (logoUrl && !logoUrl.startsWith('data:') && !logoUrl.startsWith('http://') && !logoUrl.startsWith('https://')) {
+                    logoUrl = `${API}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
+                }
                 setSchool({
                     school_name: data.school_name || '',
                     school_address: data.address || '',
                     phone_number: data.contact_number || '',
                     school_phone2: '',
                     school_phone3: '',
-                    // logo_url is a relative path like /uploads/school_logo.png — prefix API host
-                    school_logo_url: data.logo_url ? `${API}${data.logo_url}` : ''
+                    school_logo_url: logoUrl
                 });
             }
         }).catch(() => { });
