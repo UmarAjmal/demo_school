@@ -1396,6 +1396,25 @@ async function ensureTestTables() {
     if (!ensureTestTablesPromise) {
         ensureTestTablesPromise = (async () => {
             await pool.query(`
+                DO $$
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_id')
+                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_id') THEN
+                        ALTER TABLE test_papers RENAME COLUMN paper_id TO test_id;
+                    END IF;
+
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_name')
+                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_name') THEN
+                        ALTER TABLE test_papers RENAME COLUMN paper_name TO test_name;
+                    END IF;
+
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='paper_id')
+                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='test_id') THEN
+                        ALTER TABLE test_marks RENAME COLUMN paper_id TO test_id;
+                    END IF;
+                END $$;
+            `);
+            await pool.query(`
                 CREATE TABLE IF NOT EXISTS test_papers (
                     test_id SERIAL PRIMARY KEY,
                     test_name VARCHAR(200) NOT NULL,
