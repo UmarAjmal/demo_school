@@ -383,16 +383,19 @@ export default function ClassMarksSheetPage() {
 
             {/* Filters */}
             <div className="card border-0 shadow-sm mb-4">
-                <div className="card-header bg-white border-bottom py-3" style={{ borderLeft: '4px solid var(--primary-teal)' }}>
+                <div className="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" style={{ borderLeft: '4px solid var(--primary-teal)' }}>
                     <h6 className="mb-0 fw-bold" style={{ color: 'var(--primary-dark)' }}>
                         <i className="bi bi-funnel-fill me-2" style={{ color: 'var(--primary-teal)' }} />
-                        Filter Marks Sheet
+                        Filter Marks Sheet (Term → Class → Section)
                     </h6>
+                    <small className="text-muted">Step-by-step selection flow</small>
                 </div>
                 <div className="card-body">
                     <div className="row g-3 align-items-end">
                         <div className="col-md-3">
-                            <label className="form-label fw-semibold">Term</label>
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">1</span> Term
+                            </label>
                             <select className="form-select" value={selectedTerm}
                                 onChange={e => setSelectedTerm(e.target.value)} disabled={loadingCtx}>
                                 <option value="">Select Term</option>
@@ -400,7 +403,9 @@ export default function ClassMarksSheetPage() {
                             </select>
                         </div>
                         <div className="col-md-3">
-                            <label className="form-label fw-semibold">Class</label>
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">2</span> Class
+                            </label>
                             <select className="form-select" value={selectedClass}
                                 onChange={e => setSelectedClass(e.target.value)} disabled={loadingCtx}>
                                 <option value="">Select Class</option>
@@ -408,7 +413,9 @@ export default function ClassMarksSheetPage() {
                             </select>
                         </div>
                         <div className="col-md-3">
-                            <label className="form-label fw-semibold">Section</label>
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">3</span> Section
+                            </label>
                             <select className="form-select" value={selectedSection}
                                 onChange={e => setSelectedSection(e.target.value)}
                                 disabled={!selectedClass || loadingCtx}>
@@ -418,15 +425,15 @@ export default function ClassMarksSheetPage() {
                                 ))}
                             </select>
                         </div>
-                        <div className="col-md-3 d-flex gap-2 flex-wrap align-items-end">
-                            <button className="btn btn-primary-custom fw-bold" onClick={loadSheet}
+                        <div className="col-md-3 d-flex gap-2">
+                            <button className="btn btn-primary-custom fw-bold flex-grow-1" onClick={loadSheet}
                                 disabled={!ready || loading || loadingCtx}>
                                 {loading
                                     ? <><span className="spinner-border spinner-border-sm me-2" />Loading...</>
                                     : 'Load Sheet'}
                             </button>
-                            <button className="btn btn-secondary-custom" onClick={loadContext} disabled={loadingCtx}>
-                                Refresh
+                            <button className="btn btn-secondary-custom" onClick={loadContext} disabled={loadingCtx} title="Refresh">
+                                <i className="bi bi-arrow-clockwise" />
                             </button>
                             <button className="btn btn-outline-success fw-bold" onClick={handlePrint}
                                 disabled={!ready || printing || loadingCtx}>

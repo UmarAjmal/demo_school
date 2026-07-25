@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
+type TermItem = { id: number; term_name: string };
 type ClassItem = { class_id: number; class_name: string };
 type SectionItem = { section_id: number; section_name: string; class_id: number };
 type SubjectItem = {
@@ -38,11 +39,13 @@ export default function TestMarkingPage() {
     // ── context state ────────────────────────────────────────────────────────
     const [loadingCtx, setLoadingCtx] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [terms, setTerms] = useState<TermItem[]>([]);
     const [classes, setClasses] = useState<ClassItem[]>([]);
     const [sections, setSections] = useState<SectionItem[]>([]);
     const [subjects, setSubjects] = useState<SubjectItem[]>([]);
 
-    // ── filter selectors ─────────────────────────────────────────────────────
+    // ── filter selectors: Term -> Class -> Section -> Subject ─────────────────
+    const [selTerm, setSelTerm] = useState('');
     const [selClass, setSelClass] = useState('');
     const [selSection, setSelSection] = useState('');
     const [selSubject, setSelSubject] = useState('');
@@ -95,9 +98,14 @@ export default function TestMarkingPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Failed to load context');
             setIsAdmin(!!d.is_admin);
+            setTerms(d.terms || []);
             setClasses(d.classes || []);
             setSections(d.sections || []);
             setSubjects(d.subjects || []);
+
+            if (d.terms && d.terms.length > 0) {
+                setSelTerm(prev => prev || String(d.terms[0].id));
+            }
         } catch (e: any) {
             setMsg({ type: 'danger', text: e.message || 'Failed to load context' });
         } finally {
@@ -316,30 +324,46 @@ export default function TestMarkingPage() {
 
             {/* ── Filter Card ─────────────────────────────────────────────── */}
             <div className="card border-0 shadow-sm mb-4">
-                <div className="card-header bg-white border-bottom py-3" style={{ borderLeft: '4px solid var(--primary-teal)' }}>
+                <div className="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" style={{ borderLeft: '4px solid var(--primary-teal)' }}>
                     <h6 className="mb-0 fw-bold" style={{ color: 'var(--primary-dark)' }}>
                         <i className="bi bi-funnel-fill me-2" style={{ color: 'var(--primary-teal)' }} />
-                        Select Class / Section / Subject
+                        Test Marking Filters (Term → Class → Section → Subject)
                     </h6>
+                    <small className="text-muted">Step-by-step selection flow</small>
                 </div>
                 <div className="card-body">
                     <div className="row g-3 align-items-end">
-                        <div className="col-md-4">
-                            <label className="form-label fw-semibold">Class</label>
+                        <div className="col-md-3">
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">1</span> Term
+                            </label>
+                            <select className="form-select" value={selTerm} onChange={e => setSelTerm(e.target.value)} disabled={loadingCtx}>
+                                <option value="">Select Term</option>
+                                {terms.map(t => <option key={t.id} value={t.id}>{t.term_name}</option>)}
+                            </select>
+                        </div>
+                        <div className="col-md-3">
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">2</span> Class
+                            </label>
                             <select className="form-select" value={selClass} onChange={e => setSelClass(e.target.value)} disabled={loadingCtx}>
                                 <option value="">Select Class</option>
                                 {classes.map(c => <option key={c.class_id} value={c.class_id}>{c.class_name}</option>)}
                             </select>
                         </div>
-                        <div className="col-md-4">
-                            <label className="form-label fw-semibold">Section</label>
+                        <div className="col-md-3">
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">3</span> Section
+                            </label>
                             <select className="form-select" value={selSection} onChange={e => setSelSection(e.target.value)} disabled={!selClass || loadingCtx}>
                                 <option value="">Select Section</option>
                                 {filteredSections.map(s => <option key={s.section_id} value={s.section_id}>{s.section_name}</option>)}
                             </select>
                         </div>
-                        <div className="col-md-4">
-                            <label className="form-label fw-semibold">Subject</label>
+                        <div className="col-md-3">
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">4</span> Subject
+                            </label>
                             <select className="form-select" value={selSubject} onChange={e => setSelSubject(e.target.value)} disabled={!selSection || loadingCtx}>
                                 <option value="">Select Subject</option>
                                 {filteredSubjects.map(s => (

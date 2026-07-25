@@ -1507,7 +1507,21 @@ router.get('/tests/context', async (req, res) => {
             }));
         }
 
-        res.json({ is_admin: ctx.isAdmin, classes, sections, subjects });
+        const activeYear = await getActiveAcademicYear(client);
+        let terms = [];
+        if (activeYear) {
+            const termRes = await client.query(
+                `SELECT id, term_name, start_date, end_date FROM academic_terms WHERE academic_year_id = $1 ORDER BY id ASC`,
+                [activeYear.id]
+            );
+            terms = termRes.rows;
+        }
+        if (terms.length === 0) {
+            const termRes = await client.query(`SELECT id, term_name, start_date, end_date FROM academic_terms ORDER BY id ASC`);
+            terms = termRes.rows;
+        }
+
+        res.json({ is_admin: ctx.isAdmin || ctx.isSupervisor, active_year: activeYear, terms, classes, sections, subjects });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });

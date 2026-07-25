@@ -335,37 +335,46 @@ export default function ExaminationMarksPage() {
             )}
 
             <div className="card border-0 shadow-sm mb-4">
-                <div className="card-header bg-white border-bottom py-3" style={{ borderLeft: '4px solid var(--primary-teal)' }}>
+                <div className="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" style={{ borderLeft: '4px solid var(--primary-teal)' }}>
                     <h6 className="mb-0 fw-bold" style={{ color: 'var(--primary-dark)' }}>
                         <i className="bi bi-funnel-fill me-2" style={{ color: 'var(--primary-teal)' }} />
-                        Filter Marking Sheet
+                        Filter Marking Sheet (Term → Class → Section → Subject)
                     </h6>
+                    <small className="text-muted">Step-by-step selection flow</small>
                 </div>
                 <div className="card-body">
                     <div className="row g-3 align-items-end">
                         <div className="col-md-3">
-                            <label className="form-label fw-semibold">Term</label>
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">1</span> Term
+                            </label>
                             <select className="form-select" value={selectedTerm} onChange={(e) => setSelectedTerm(e.target.value)} disabled={loadingContext}>
                                 <option value="">Select Term</option>
                                 {terms.map(t => <option key={t.id} value={t.id}>{t.term_name}</option>)}
                             </select>
                         </div>
                         <div className="col-md-3">
-                            <label className="form-label fw-semibold">Class</label>
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">2</span> Class
+                            </label>
                             <select className="form-select" value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} disabled={loadingContext}>
                                 <option value="">Select Class</option>
                                 {classes.map(c => <option key={c.class_id} value={c.class_id}>{c.class_name}</option>)}
                             </select>
                         </div>
                         <div className="col-md-3">
-                            <label className="form-label fw-semibold">Section</label>
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">3</span> Section
+                            </label>
                             <select className="form-select" value={selectedSection} onChange={(e) => setSelectedSection(e.target.value)} disabled={!selectedClass || loadingContext}>
                                 <option value="">Select Section</option>
                                 {filteredSections.map(s => <option key={s.section_id} value={s.section_id}>{s.section_name}</option>)}
                             </select>
                         </div>
                         <div className="col-md-3">
-                            <label className="form-label fw-semibold">Subject</label>
+                            <label className="form-label fw-semibold">
+                                <span className="badge bg-dark me-1">4</span> Subject
+                            </label>
                             <select className="form-select" value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedSection || loadingContext}>
                                 <option value="">Select Subject</option>
                                 {filteredSubjects.map(s => <option key={s.subject_id} value={s.subject_id}>{s.subject_name}{s.subject_code ? ` (${s.subject_code})` : ''}</option>)}
