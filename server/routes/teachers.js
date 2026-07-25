@@ -18,6 +18,7 @@ router.get('/', async (req, res) => {
                         DISTINCT jsonb_build_object(
                             'subject_id', s.subject_id,
                             'subject_name', s.subject_name,
+                            'term_name', COALESCE(t.term_name, 'General'),
                             'assignment_id', tsa.assignment_id
                         )
                     ) FILTER (WHERE s.subject_id IS NOT NULL), 
@@ -41,6 +42,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN app_users u ON e.app_user_id = u.id
             LEFT JOIN teacher_subject_assignment tsa ON e.employee_id = tsa.employee_id
             LEFT JOIN subjects s ON tsa.subject_id = s.subject_id
+            LEFT JOIN academic_terms t ON s.term_id = t.id
             LEFT JOIN teacher_class_assignment tca ON e.employee_id = tca.employee_id
             LEFT JOIN classes c ON tca.class_id = c.class_id
             LEFT JOIN sections sec ON tca.section_id = sec.section_id
@@ -74,6 +76,7 @@ router.get('/:id', async (req, res) => {
                         DISTINCT jsonb_build_object(
                             'subject_id', s.subject_id,
                             'subject_name', s.subject_name,
+                            'term_name', COALESCE(t.term_name, 'General'),
                             'assignment_id', tsa.assignment_id
                         )
                     ) FILTER (WHERE s.subject_id IS NOT NULL),
@@ -97,6 +100,7 @@ router.get('/:id', async (req, res) => {
             LEFT JOIN app_users u ON e.app_user_id = u.id
             LEFT JOIN teacher_subject_assignment tsa ON e.employee_id = tsa.employee_id
             LEFT JOIN subjects s ON tsa.subject_id = s.subject_id
+            LEFT JOIN academic_terms t ON s.term_id = t.id
             LEFT JOIN teacher_class_assignment tca ON e.employee_id = tca.employee_id
             LEFT JOIN classes c ON tca.class_id = c.class_id
             LEFT JOIN sections sec ON tca.section_id = sec.section_id
