@@ -56,10 +56,17 @@ function VoucherSlip({ v, serial, month, year, school, filterClassId }: { v: Vou
     // Fixed 9 rows — matches template exactly
     // For family vouchers: use family_members from backend (all active siblings)
     // Sort so filtered-class students appear first when a class filter is active
-    type StudentRow = { first_name: string; last_name: string; father_name?: string; class_name?: string; section_name?: string } | null;
+    type StudentRow = { first_name: string; last_name: string; father_name?: string; class_name?: string; section_name?: string; category?: string } | null;
     let membersSource = v.family_members && v.family_members.length > 0
         ? [...v.family_members]
         : allStudents.map(s => ({ ...s, class_id: s.c_class_id }));
+
+    // Filter out Trusted category students so their names NEVER get printed on fee vouchers/slips
+    membersSource = membersSource.filter((m: any) => {
+        const cat = (m.category || '').toString().trim().toLowerCase();
+        return cat !== 'trusted';
+    });
+
     if (filterClassId && v.voucher_type === 'family') {
         membersSource.sort((a, b) => {
             const aMatch = (a as any).class_id?.toString() === filterClassId ? 0 : 1;
@@ -72,7 +79,8 @@ function VoucherSlip({ v, serial, month, year, school, filterClassId }: { v: Vou
         last_name: m.last_name,
         father_name: (m as any).father_name,
         class_name: (m as any).class_name,
-        section_name: (m as any).section_name
+        section_name: (m as any).section_name,
+        category: (m as any).category
     }));
     const studentRows: StudentRow[] = [...baseStudents];
     while (studentRows.length < 9) studentRows.push(null);

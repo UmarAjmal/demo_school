@@ -677,7 +677,7 @@ router.get('/print-queue', async (req, res) => {
             SELECT mfs.slip_id, mfs.student_id, mfs.family_id, mfs.class_id,
                    mfs.total_amount, mfs.paid_amount, mfs.status, mfs.due_date, mfs.issue_date,
                    mfs.is_printed, mfs.printed_at, mfs.is_family_slip,
-                   s.first_name, s.last_name, s.admission_no, s.monthly_fee, s.father_name, s.family_id AS s_family_id,
+                   s.first_name, s.last_name, s.admission_no, s.monthly_fee, s.father_name, s.category, s.family_id AS s_family_id,
                    sc.class_name, sc.class_id AS c_class_id, sec.section_name,
                    COALESCE(JSON_AGG(
                        JSON_BUILD_OBJECT('item_id',sli.item_id,'head_name',sli.head_name,'amount',sli.amount,'note',sli.note)
@@ -692,7 +692,7 @@ router.get('/print-queue', async (req, res) => {
             GROUP BY mfs.slip_id, mfs.student_id, mfs.family_id, mfs.class_id,
                      mfs.total_amount, mfs.paid_amount, mfs.status, mfs.due_date, mfs.issue_date,
                      mfs.is_printed, mfs.printed_at, mfs.is_family_slip,
-                     s.first_name, s.last_name, s.admission_no, s.monthly_fee, s.father_name, s.family_id,
+                     s.first_name, s.last_name, s.admission_no, s.monthly_fee, s.father_name, s.category, s.family_id,
                      sc.class_name, sc.class_id, sec.section_name
             ORDER BY s.family_id NULLS LAST, sc.class_id DESC NULLS LAST, s.first_name
         `, [mArr, year]);
@@ -703,8 +703,6 @@ router.get('/print-queue', async (req, res) => {
         const familyMap = {};
         const soloSlips = [];
         for (const slip of allSlips) {
-            // Use is_family_slip flag — a student can have family_id but still get an individual slip
-            // if they were the only active family member at generation time
             if (!slip.is_family_slip) {
                 soloSlips.push(slip);
             } else {
@@ -715,8 +713,9 @@ router.get('/print-queue', async (req, res) => {
 
         const vouchers = [];
 
-        // Individual vouchers
+        // Individual vouchers (exclude Trusted category students)
         for (const slip of soloSlips) {
+            if (slip.category && slip.category.toString().trim().toLowerCase() === 'trusted') continue;
             vouchers.push({
                 voucher_type: 'individual',
                 primary: slip,
@@ -753,16 +752,18 @@ router.get('/print-queue', async (req, res) => {
             });
         }
 
-        // Fetch all active family members for family vouchers so the print shows all students
+        // Fetch all active family members for family vouchers (excluding Trusted category) so printed vouchers only show non-trusted students
         const familyIds = vouchers.filter(v => v.voucher_type === 'family').map(v => v.family_id);
         if (familyIds.length > 0) {
             const membersResult = await pool.query(
-                `SELECT s.student_id, s.first_name, s.last_name, s.father_name, s.family_id,
+                `SELECT s.student_id, s.first_name, s.last_name, s.father_name, s.family_id, s.category,
                         c.class_name, c.class_id, sec.section_name
                  FROM students s
                  LEFT JOIN classes c ON s.class_id = c.class_id
                  LEFT JOIN sections sec ON s.section_id = sec.section_id
-                 WHERE s.family_id = ANY($1) AND s.status = 'Active'
+                 WHERE s.family_id = ANY($1) 
+                   AND s.status = 'Active'
+                   AND (s.category IS NULL OR LOWER(TRIM(s.category)) != 'trusted')
                  ORDER BY c.class_id DESC NULLS LAST, sec.section_name ASC NULLS LAST, s.first_name`,
                 [familyIds]
             );
