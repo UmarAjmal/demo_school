@@ -1409,6 +1409,11 @@ async function ensureTestTables() {
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             `);
+            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS test_id SERIAL;`);
+            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS test_name VARCHAR(200);`);
+            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS description TEXT;`);
+            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS subject_id INTEGER REFERENCES subjects(subject_id) ON DELETE CASCADE;`);
+            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS created_by_employee_id INTEGER REFERENCES employees(employee_id) ON DELETE SET NULL;`);
             await pool.query(`
                 CREATE TABLE IF NOT EXISTS test_marks (
                     test_mark_id SERIAL PRIMARY KEY,

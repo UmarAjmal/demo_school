@@ -90,6 +90,29 @@ async function runEssentialMigrations() {
             ALTER TABLE subjects ADD CONSTRAINT subjects_section_term_subject_name_key UNIQUE (section_id, subject_name, term_id);
         `);
 
+        // 8. Test Papers Columns Migration
+        console.log("   → Checking test_papers columns...");
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS test_papers (
+                test_id SERIAL PRIMARY KEY,
+                test_name VARCHAR(200) NOT NULL,
+                description TEXT,
+                total_marks NUMERIC(10,2) NOT NULL CHECK (total_marks > 0),
+                class_id INTEGER NOT NULL REFERENCES classes(class_id) ON DELETE CASCADE,
+                section_id INTEGER NOT NULL REFERENCES sections(section_id) ON DELETE CASCADE,
+                subject_id INTEGER NOT NULL REFERENCES subjects(subject_id) ON DELETE CASCADE,
+                created_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
+                created_by_employee_id INTEGER REFERENCES employees(employee_id) ON DELETE SET NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS test_id SERIAL;
+            ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS test_name VARCHAR(200);
+            ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS description TEXT;
+            ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS subject_id INTEGER REFERENCES subjects(subject_id) ON DELETE CASCADE;
+            ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS created_by_employee_id INTEGER REFERENCES employees(employee_id) ON DELETE SET NULL;
+            CREATE INDEX IF NOT EXISTS idx_test_papers_class_sec_sub ON test_papers(class_id, section_id, subject_id);
+        `);
+
         await client.query('COMMIT');
         console.log("✅ All essential migrations completed successfully!");
     } catch (err) {
