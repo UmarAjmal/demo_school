@@ -1432,6 +1432,24 @@ async function ensureTestTables() {
                     IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_marks' AND constraint_name='test_marks_test_id_student_id_key') THEN
                         ALTER TABLE test_marks ADD CONSTRAINT test_marks_test_id_student_id_key UNIQUE (test_id, student_id);
                     END IF;
+
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='paper_id')
+                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='test_id') THEN
+                        ALTER TABLE test_paper_locks RENAME COLUMN paper_id TO test_id;
+                    END IF;
+
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='paper_id') THEN
+                        ALTER TABLE test_paper_locks ADD COLUMN IF NOT EXISTS test_id INTEGER;
+                        UPDATE test_paper_locks SET test_id = paper_id WHERE test_id IS NULL AND paper_id IS NOT NULL;
+                    END IF;
+
+                    IF EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_paper_locks' AND constraint_name='test_paper_locks_paper_id_locked_by_user_id_key') THEN
+                        ALTER TABLE test_paper_locks DROP CONSTRAINT test_paper_locks_paper_id_locked_by_user_id_key;
+                    END IF;
+
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_paper_locks' AND constraint_name='test_paper_locks_test_id_locked_by_user_id_key') THEN
+                        ALTER TABLE test_paper_locks ADD CONSTRAINT test_paper_locks_test_id_locked_by_user_id_key UNIQUE (test_id, locked_by_user_id);
+                    END IF;
                 END $$;
             `);
             await pool.query(`
@@ -1598,9 +1616,10 @@ router.get('/tests', async (req, res) => {
         }
 
         const testsRes = await client.query(
-            `SELECT tp.test_id, tp.test_name, tp.description, tp.total_marks, tp.created_at,
+            `SELECT COALESCE(tp.test_id, tp.paper_id) AS test_id, COALESCE(tp.test_name, tp.paper_name) AS test_name,
+                    tp.description, tp.total_marks, tp.created_at,
                     COALESCE(e.first_name || ' ' || e.last_name, 'Admin') AS created_by_name,
-                    (SELECT COUNT(*) FROM test_marks tm WHERE tm.test_id = tp.test_id AND tm.obtained_marks IS NOT NULL)::int AS marks_entered
+                    (SELECT COUNT(*) FROM test_marks tm WHERE (tm.test_id = COALESCE(tp.test_id, tp.paper_id) OR tm.paper_id = COALESCE(tp.test_id, tp.paper_id)) AND tm.obtained_marks IS NOT NULL)::int AS marks_entered
              FROM test_papers tp
              LEFT JOIN employees e ON e.employee_id = tp.created_by_employee_id
              WHERE tp.class_id = $1 AND tp.section_id = $2 AND tp.subject_id = $3
@@ -1648,9 +1667,9 @@ router.post('/tests', async (req, res) => {
         }
 
         const insertRes = await client.query(
-            `INSERT INTO test_papers (test_name, description, total_marks, class_id, section_id, subject_id, created_by_user_id, created_by_employee_id)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-             RETURNING test_id`,
+            `INSERT INTO test_papers (test_name, paper_name, description, total_marks, class_id, section_id, subject_id, created_by_user_id, created_by_employee_id)
+             VALUES ($1,$1,$2,$3,$4,$5,$6,$7,$8)
+             RETURNING COALESCE(test_id, paper_id) AS test_id`,
             [testName, description, totalMarks, classId, sectionId, subjectId, userId, ctx.employeeId]
         );
 
@@ -1677,12 +1696,13 @@ router.get('/tests/:test_id/sheet', async (req, res) => {
         if (ctx.error) return res.status(ctx.error.status).json({ error: ctx.error.message });
 
         const testRes = await client.query(
-            `SELECT tp.*, sub.subject_name, sub.subject_code, c.class_name, sec.section_name
+            `SELECT COALESCE(tp.test_id, tp.paper_id) AS test_id, COALESCE(tp.test_name, tp.paper_name) AS test_name,
+                    tp.*, sub.subject_name, sub.subject_code, c.class_name, sec.section_name
              FROM test_papers tp
              JOIN subjects sub ON sub.subject_id = tp.subject_id
              JOIN sections sec ON sec.section_id = tp.section_id
              JOIN classes c ON c.class_id = tp.class_id
-             WHERE tp.test_id = $1`,
+             WHERE (tp.test_id = $1 OR tp.paper_id = $1)`,
             [testId]
         );
         if (testRes.rows.length === 0) return res.status(404).json({ error: 'Test not found' });
@@ -1699,14 +1719,14 @@ router.get('/tests/:test_id/sheet', async (req, res) => {
             `SELECT s.student_id, s.first_name, s.last_name, s.admission_no, s.roll_no,
                     tm.test_mark_id, tm.obtained_marks, tm.remarks
              FROM students s
-             LEFT JOIN test_marks tm ON tm.student_id = s.student_id AND tm.test_id = $1
+             LEFT JOIN test_marks tm ON tm.student_id = s.student_id AND (tm.test_id = $1 OR tm.paper_id = $1)
              WHERE s.class_id = $2 AND s.section_id = $3 AND s.status = 'Active'
              ORDER BY s.roll_no ASC NULLS LAST, s.first_name ASC, s.last_name ASC`,
             [testId, test.class_id, test.section_id]
         );
 
         const lockRes = await client.query(
-            `SELECT lock_id FROM test_paper_locks WHERE test_id = $1 AND locked_by_user_id = $2 LIMIT 1`,
+            `SELECT lock_id FROM test_paper_locks WHERE (test_id = $1 OR paper_id = $1) AND locked_by_user_id = $2 LIMIT 1`,
             [testId, userId]
         );
 
@@ -1736,7 +1756,7 @@ router.post('/tests/:test_id/save', async (req, res) => {
         const ctx = await getUserContext(client, userId);
         if (ctx.error) return res.status(ctx.error.status).json({ error: ctx.error.message });
 
-        const testRes = await client.query(`SELECT * FROM test_papers WHERE test_id = $1`, [testId]);
+        const testRes = await client.query(`SELECT COALESCE(test_id, paper_id) AS test_id, * FROM test_papers WHERE (test_id = $1 OR paper_id = $1)`, [testId]);
         if (testRes.rows.length === 0) return res.status(404).json({ error: 'Test not found' });
 
         const test = testRes.rows[0];
@@ -1747,7 +1767,7 @@ router.post('/tests/:test_id/save', async (req, res) => {
             if (!allowed) return res.status(403).json({ error: 'You are not assigned to this class/section/subject' });
 
             const lockCheck = await client.query(
-                `SELECT lock_id FROM test_paper_locks WHERE test_id = $1 AND locked_by_user_id = $2 LIMIT 1`,
+                `SELECT lock_id FROM test_paper_locks WHERE (test_id = $1 OR paper_id = $1) AND locked_by_user_id = $2 LIMIT 1`,
                 [testId, userId]
             );
             if (lockCheck.rows.length > 0) return res.status(403).json({ error: 'This test is locked. You can only view it now.' });
@@ -1787,8 +1807,8 @@ router.post('/tests/:test_id/save', async (req, res) => {
             const remarks   = String(row.remarks || '').trim() || null;
 
             await client.query(
-                `INSERT INTO test_marks (test_id, student_id, obtained_marks, remarks)
-                 VALUES ($1,$2,$3,$4)
+                `INSERT INTO test_marks (test_id, paper_id, student_id, obtained_marks, remarks)
+                 VALUES ($1,$1,$2,$3,$4)
                  ON CONFLICT (test_id, student_id)
                  DO UPDATE SET obtained_marks = EXCLUDED.obtained_marks, remarks = EXCLUDED.remarks`,
                 [testId, studentId, obtained, remarks]

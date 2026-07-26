@@ -128,6 +128,24 @@ async function runEssentialMigrations() {
                 IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_marks' AND constraint_name='test_marks_test_id_student_id_key') THEN
                     ALTER TABLE test_marks ADD CONSTRAINT test_marks_test_id_student_id_key UNIQUE (test_id, student_id);
                 END IF;
+
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='paper_id')
+                   AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='test_id') THEN
+                    ALTER TABLE test_paper_locks RENAME COLUMN paper_id TO test_id;
+                END IF;
+
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='paper_id') THEN
+                    ALTER TABLE test_paper_locks ADD COLUMN IF NOT EXISTS test_id INTEGER;
+                    UPDATE test_paper_locks SET test_id = paper_id WHERE test_id IS NULL AND paper_id IS NOT NULL;
+                END IF;
+
+                IF EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_paper_locks' AND constraint_name='test_paper_locks_paper_id_locked_by_user_id_key') THEN
+                    ALTER TABLE test_paper_locks DROP CONSTRAINT test_paper_locks_paper_id_locked_by_user_id_key;
+                END IF;
+
+                IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_paper_locks' AND constraint_name='test_paper_locks_test_id_locked_by_user_id_key') THEN
+                    ALTER TABLE test_paper_locks ADD CONSTRAINT test_paper_locks_test_id_locked_by_user_id_key UNIQUE (test_id, locked_by_user_id);
+                END IF;
             END $$;
         `);
         await client.query(`
