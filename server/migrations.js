@@ -95,14 +95,25 @@ async function runEssentialMigrations() {
         await client.query(`
             DO $$
             BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_name')
+                   AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_name') THEN
+                    ALTER TABLE test_papers RENAME COLUMN paper_name TO test_name;
+                END IF;
+
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_name') THEN
+                    ALTER TABLE test_papers ALTER COLUMN paper_name DROP NOT NULL;
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_name') THEN
+                        UPDATE test_papers SET test_name = paper_name WHERE test_name IS NULL AND paper_name IS NOT NULL;
+                    END IF;
+                END IF;
+
                 IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_id')
                    AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_id') THEN
                     ALTER TABLE test_papers RENAME COLUMN paper_id TO test_id;
                 END IF;
 
-                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_name')
-                   AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_name') THEN
-                    ALTER TABLE test_papers RENAME COLUMN paper_name TO test_name;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_id') THEN
+                    ALTER TABLE test_papers ALTER COLUMN paper_id DROP NOT NULL;
                 END IF;
 
                 IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='paper_id')
