@@ -1416,10 +1416,6 @@ async function ensureTestTables() {
                         ALTER TABLE test_papers RENAME COLUMN paper_id TO test_id;
                     END IF;
 
-                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_id') THEN
-                        ALTER TABLE test_papers ALTER COLUMN paper_id DROP NOT NULL;
-                    END IF;
-
                     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='paper_id')
                        AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='test_id') THEN
                         ALTER TABLE test_marks RENAME COLUMN paper_id TO test_id;
