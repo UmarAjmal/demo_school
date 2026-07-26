@@ -1420,6 +1420,18 @@ async function ensureTestTables() {
                        AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='test_id') THEN
                         ALTER TABLE test_marks RENAME COLUMN paper_id TO test_id;
                     END IF;
+
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='remarks') THEN
+                        ALTER TABLE test_marks ADD COLUMN remarks VARCHAR(300);
+                    END IF;
+
+                    IF EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_marks' AND constraint_name='test_marks_paper_id_student_id_key') THEN
+                        ALTER TABLE test_marks DROP CONSTRAINT test_marks_paper_id_student_id_key;
+                    END IF;
+
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_marks' AND constraint_name='test_marks_test_id_student_id_key') THEN
+                        ALTER TABLE test_marks ADD CONSTRAINT test_marks_test_id_student_id_key UNIQUE (test_id, student_id);
+                    END IF;
                 END $$;
             `);
             await pool.query(`
