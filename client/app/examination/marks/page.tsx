@@ -10,6 +10,7 @@ type SubjectItem = {
     subject_id: number;
     subject_name: string;
     subject_code?: string | null;
+    term_id?: number | null;
     section_id: number;
     section_name: string;
     class_id: number;
@@ -73,8 +74,13 @@ export default function ExaminationMarksPage() {
 
     const filteredSubjects = useMemo(() => {
         if (!selectedClass || !selectedSection) return [];
-        return subjects.filter(s => s.class_id === Number(selectedClass) && s.section_id === Number(selectedSection));
-    }, [subjects, selectedClass, selectedSection]);
+        return subjects.filter(s => {
+            const classMatch = s.class_id === Number(selectedClass);
+            const sectionMatch = s.section_id === Number(selectedSection);
+            const termMatch = !selectedTerm || !s.term_id || String(s.term_id) === String(selectedTerm);
+            return classMatch && sectionMatch && termMatch;
+        });
+    }, [subjects, selectedClass, selectedSection, selectedTerm]);
 
     const readyToLoadSheet = !!(selectedTerm && selectedClass && selectedSection && selectedSubject && user?.id);
 

@@ -8,7 +8,7 @@ type ClassItem = { class_id: number; class_name: string };
 type SectionItem = { section_id: number; section_name: string; class_id: number };
 type SubjectItem = {
     subject_id: number; subject_name: string; subject_code?: string | null;
-    section_id: number; class_id: number;
+    section_id: number; class_id: number; term_id?: number | null;
 };
 
 type TestPaper = {
@@ -79,12 +79,15 @@ export default function TestMarkingPage() {
         [sections, selClass]
     );
 
-    const filteredSubjects = useMemo(() =>
-        (selClass && selSection)
-            ? subjects.filter(s => s.class_id === Number(selClass) && s.section_id === Number(selSection))
-            : [],
-        [subjects, selClass, selSection]
-    );
+    const filteredSubjects = useMemo(() => {
+        if (!selClass || !selSection) return [];
+        return subjects.filter(s => {
+            const classMatch = s.class_id === Number(selClass);
+            const sectionMatch = s.section_id === Number(selSection);
+            const termMatch = !selTerm || !s.term_id || String(s.term_id) === String(selTerm);
+            return classMatch && sectionMatch && termMatch;
+        });
+    }, [subjects, selClass, selSection, selTerm]);
 
     const readyToList = !!(selClass && selSection && selSubject && user?.id);
 
@@ -116,6 +119,7 @@ export default function TestMarkingPage() {
     useEffect(() => { loadContext(); }, [user?.id]);
 
     // cascade resets
+    useEffect(() => { setSelSubject(''); setTests([]); setSelectedTest(null); setSheet(null); }, [selTerm]);
     useEffect(() => { setSelSection(''); setSelSubject(''); setTests([]); setSelectedTest(null); setSheet(null); }, [selClass]);
     useEffect(() => { setSelSubject(''); setTests([]); setSelectedTest(null); setSheet(null); }, [selSection]);
     useEffect(() => { setTests([]); setSelectedTest(null); setSheet(null); }, [selSubject]);

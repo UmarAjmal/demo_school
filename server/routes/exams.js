@@ -260,7 +260,7 @@ router.get('/context', async (req, res) => {
             const classRes = await client.query(`SELECT class_id, class_name FROM classes ORDER BY class_name ASC`);
             const sectionRes = await client.query(`SELECT section_id, section_name, class_id FROM sections ORDER BY class_id, section_name ASC`);
             const subjectRes = await client.query(
-                `SELECT s.subject_id, s.subject_name, s.subject_code,
+                `SELECT s.subject_id, s.subject_name, s.subject_code, s.term_id,
                         sec.section_id, sec.section_name,
                         c.class_id, c.class_name
                  FROM subjects s
@@ -289,7 +289,7 @@ router.get('/context', async (req, res) => {
                 `SELECT DISTINCT
                     c.class_id, c.class_name,
                     sec.section_id, sec.section_name,
-                    s.subject_id, s.subject_name, s.subject_code
+                    s.subject_id, s.subject_name, s.subject_code, s.term_id
                  FROM teacher_subject_assignment tsa
                  JOIN subjects s ON s.subject_id = tsa.subject_id
                  JOIN sections sec ON sec.section_id = s.section_id
@@ -301,7 +301,7 @@ router.get('/context', async (req, res) => {
                  SELECT DISTINCT
                     c.class_id, c.class_name,
                     sec.section_id, sec.section_name,
-                    NULL::int as subject_id, NULL::varchar as subject_name, NULL::varchar as subject_code
+                    NULL::int as subject_id, NULL::varchar as subject_name, NULL::varchar as subject_code, NULL::int as term_id
                  FROM teacher_class_assignment tca
                  JOIN classes c ON c.class_id = tca.class_id
                  JOIN sections sec ON sec.section_id = tca.section_id
@@ -331,6 +331,7 @@ router.get('/context', async (req, res) => {
                     subject_id: r.subject_id,
                     subject_name: r.subject_name,
                     subject_code: r.subject_code,
+                    term_id: r.term_id,
                     section_id: r.section_id,
                     section_name: r.section_name,
                     class_id: r.class_id,
@@ -1477,7 +1478,7 @@ router.get('/tests/context', async (req, res) => {
             const classRes  = await client.query(`SELECT class_id, class_name FROM classes ORDER BY class_name ASC`);
             const sectionRes = await client.query(`SELECT section_id, section_name, class_id FROM sections ORDER BY class_id, section_name ASC`);
             const subjectRes = await client.query(
-                `SELECT s.subject_id, s.subject_name, s.subject_code,
+                `SELECT s.subject_id, s.subject_name, s.subject_code, s.term_id,
                         sec.section_id, sec.section_name,
                         c.class_id, c.class_name
                  FROM subjects s
@@ -1496,7 +1497,7 @@ router.get('/tests/context', async (req, res) => {
                 `SELECT DISTINCT
                     c.class_id, c.class_name,
                     sec.section_id, sec.section_name,
-                    s.subject_id, s.subject_name, s.subject_code
+                    s.subject_id, s.subject_name, s.subject_code, s.term_id
                  FROM teacher_subject_assignment tsa
                  JOIN subjects s ON s.subject_id = tsa.subject_id
                  JOIN sections sec ON sec.section_id = s.section_id
@@ -1508,7 +1509,7 @@ router.get('/tests/context', async (req, res) => {
                  SELECT DISTINCT
                     c.class_id, c.class_name,
                     sec.section_id, sec.section_name,
-                    NULL::int as subject_id, NULL::varchar as subject_name, NULL::varchar as subject_code
+                    NULL::int as subject_id, NULL::varchar as subject_name, NULL::varchar as subject_code, NULL::int as term_id
                  FROM teacher_class_assignment tca
                  JOIN classes c ON c.class_id = tca.class_id
                  JOIN sections sec ON sec.section_id = tca.section_id
@@ -1525,7 +1526,7 @@ router.get('/tests/context', async (req, res) => {
             classes  = Array.from(classMap.values());
             sections = Array.from(sectionMap.values());
             subjects = scopeRes.rows.map(r => ({
-                subject_id: r.subject_id, subject_name: r.subject_name, subject_code: r.subject_code,
+                subject_id: r.subject_id, subject_name: r.subject_name, subject_code: r.subject_code, term_id: r.term_id,
                 section_id: r.section_id, section_name: r.section_name,
                 class_id: r.class_id, class_name: r.class_name
             }));
