@@ -1955,7 +1955,7 @@ router.get('/approvals/list', async (req, res) => {
                     tp.section_id, sec.section_name,
                     tp.subject_id, sub.subject_name,
                     COALESCE(esa.status, tp.status, 'pending') AS status,
-                    (SELECT COUNT(*) FROM test_marks tm WHERE tm.test_id = COALESCE(tp.test_id, tp.paper_id) OR tm.paper_id = COALESCE(tp.test_id, tp.paper_id))::int AS student_count,
+                    (SELECT COUNT(*) FROM test_marks tm WHERE tm.test_id = COALESCE(tp.test_id, tp.paper_id))::int AS student_count,
                     tp.created_at AS last_updated,
                     COALESCE(u_sub.username, e.first_name || ' ' || e.last_name, 'Teacher') AS submitted_by_name,
                     COALESCE(u_app.username, '-') AS approved_by_name,
@@ -2113,7 +2113,7 @@ router.get('/approvals/sheet-detail', async (req, res) => {
                 `SELECT s.student_id, s.first_name, s.last_name, s.admission_no, s.roll_no,
                         tm.test_mark_id, tm.obtained_marks, tm.remarks
                  FROM students s
-                 LEFT JOIN test_marks tm ON tm.student_id = s.student_id AND (tm.test_id = $1 OR tm.paper_id = $1)
+                 LEFT JOIN test_marks tm ON tm.student_id = s.student_id AND tm.test_id = $1
                  WHERE s.class_id = $2 AND s.section_id = $3 AND s.status = 'Active'
                  ORDER BY s.roll_no ASC NULLS LAST, s.first_name ASC`,
                 [testId, test.class_id, test.section_id]
