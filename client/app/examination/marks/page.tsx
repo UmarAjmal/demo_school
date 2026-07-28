@@ -163,7 +163,12 @@ export default function ExaminationMarksPage() {
                 subject_id: selectedSubject
             });
             const r = await fetch(`${API}/exams/marks/sheet?${params.toString()}`);
-            const d: SheetResponse & { error?: string } = await r.json();
+            let d: any = {};
+            try {
+                d = await r.json();
+            } catch {
+                throw new Error(`Server returned HTTP ${r.status}. Please refresh after deployment.`);
+            }
             if (!r.ok) throw new Error(d.error || 'Failed to load marks sheet');
 
             setSheetReadonly(!!d.readonly);

@@ -441,7 +441,7 @@ router.get('/context/class-teacher', async (req, res) => {
     }
 });
 
-router.get('/marking-sheet', async (req, res) => {
+router.get(['/marking-sheet', '/marks/sheet'], async (req, res) => {
     const client = await pool.connect();
     try {
         await ensureTables();
@@ -521,6 +521,43 @@ router.get('/marking-sheet', async (req, res) => {
             total_marks: totalMarks,
             students: studentsRes.rows
         });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
+router.delete(['/marking-sheet', '/marks/sheet'], async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await ensureTables();
+
+        const userId = parseUserId(req.query.user_id);
+        const termId = Number(req.query.term_id);
+        const classId = Number(req.query.class_id);
+        const sectionId = Number(req.query.section_id);
+        const subjectId = Number(req.query.subject_id);
+
+        if (!userId || !termId || !classId || !sectionId || !subjectId) {
+            return res.status(400).json({ error: 'user_id, term_id, class_id, section_id, subject_id are required' });
+        }
+
+        const ctx = await getUserContext(client, userId);
+        if (ctx.error) return res.status(ctx.error.status).json({ error: ctx.error.message });
+
+        if (!ctx.isAdmin) {
+            return res.status(403).json({ error: 'Only Administrators can delete marks sheets' });
+        }
+
+        await client.query(
+            `DELETE FROM exam_marks
+             WHERE term_id = $1 AND class_id = $2 AND section_id = $3 AND subject_id = $4`,
+            [termId, classId, sectionId, subjectId]
+        );
+
+        res.json({ message: 'Marks sheet deleted successfully.' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
