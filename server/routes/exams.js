@@ -1196,7 +1196,7 @@ router.get('/student-academics/:student_id', async (req, res) => {
              JOIN subjects s ON s.subject_id = em.subject_id
              JOIN academic_terms t ON t.id = em.term_id
              JOIN academic_years ay ON ay.id = t.academic_year_id
-             WHERE em.student_id = $1
+             WHERE em.student_id = $1 AND em.status = 'published'
              ORDER BY ay.id ASC, t.id ASC, s.subject_name ASC`,
             [studentId]
         );
@@ -1217,6 +1217,7 @@ router.get('/student-academics/:student_id', async (req, res) => {
              JOIN classes c ON c.class_id = tp.class_id
              JOIN sections sec ON sec.section_id = tp.section_id
              WHERE tm.student_id = $1
+               AND tp.status = 'published'
                AND tm.obtained_marks IS NOT NULL
              ORDER BY tp.created_at ASC`,
             [studentId]
