@@ -233,7 +233,7 @@ export default function MarksApprovalPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Status update failed');
 
-            notify.success(d.message || 'Status updated.');
+            notify.success(d.message || 'Status updated successfully.');
             setSelectedSheet(prev => prev ? { ...prev, status: targetStatus } : null);
             await loadApprovals();
         } catch (e: any) {
@@ -256,7 +256,7 @@ export default function MarksApprovalPage() {
             <div className="d-flex flex-wrap align-items-center justify-content-between mb-4">
                 <div>
                     <h4 className="mb-1 fw-bold" style={{ color: 'var(--primary-dark)' }}>
-                        <i className="bi bi-check2-all me-2" style={{ color: 'var(--accent-orange)' }} />
+                        <i className="bi bi-patch-check-fill me-2" style={{ color: 'var(--accent-orange)' }} />
                         Marks Approval & Publishing
                     </h4>
                     <div className="text-muted small">
@@ -265,23 +265,23 @@ export default function MarksApprovalPage() {
                 </div>
 
                 <div className="d-flex align-items-center gap-2 mt-2 mt-md-0">
-                    <span className="badge rounded-pill bg-dark text-white px-3 py-2 border">
+                    <span className="badge rounded-pill bg-dark text-white px-3 py-2 border shadow-xs">
                         <i className="bi bi-person-badge me-1" />
                         Role: {userRole}
                     </span>
                     {canPublish ? (
-                        <span className="badge rounded-pill bg-success text-white px-3 py-2">
-                            <i className="bi bi-rocket-takeoff me-1" />
-                            Principal/Admin Mode (Approve & Publish)
+                        <span className="badge rounded-pill bg-success text-white px-3 py-2 shadow-xs">
+                            <i className="bi bi-rocket-takeoff-fill me-1" />
+                            Principal / Admin Mode (Approve & Publish)
                         </span>
                     ) : canApprove ? (
-                        <span className="badge rounded-pill bg-info text-dark px-3 py-2">
-                            <i className="bi bi-check-circle me-1" />
-                            Coordinator/Head Mode (Approve Only)
+                        <span className="badge rounded-pill bg-info text-dark px-3 py-2 shadow-xs">
+                            <i className="bi bi-check-circle-fill me-1" />
+                            Coordinator / Head Mode (Approve Only)
                         </span>
                     ) : (
-                        <span className="badge rounded-pill bg-secondary text-white px-3 py-2">
-                            <i className="bi bi-eye me-1" />
+                        <span className="badge rounded-pill bg-secondary text-white px-3 py-2 shadow-xs">
+                            <i className="bi bi-eye-fill me-1" />
                             Teacher Mode (Submission Tracker)
                         </span>
                     )}
@@ -291,52 +291,55 @@ export default function MarksApprovalPage() {
             {/* ── Summary Stats Cards ─────────────────────────────────────── */}
             <div className="row g-3 mb-4">
                 <div className="col-md-3 col-6">
-                    <div className="card border-0 shadow-sm p-3" style={{ borderLeft: '4px solid #6366f1' }}>
+                    <div className="card border-0 shadow-sm p-3 h-100" style={{ borderLeft: '4px solid var(--primary-dark)' }}>
                         <div className="d-flex align-items-center justify-content-between">
                             <div>
-                                <div className="text-muted small fw-semibold">Total Sheets</div>
-                                <h3 className="mb-0 fw-bold">{summary.total_sheets}</h3>
+                                <div className="text-muted extra-small fw-semibold text-uppercase">Total Sheets</div>
+                                <h3 className="mb-0 fw-bold mt-1" style={{ color: 'var(--primary-dark)' }}>{summary.total_sheets}</h3>
                             </div>
-                            <div className="fs-2 text-indigo">
-                                <i className="bi bi-files" />
+                            <div className="rounded-circle p-3 bg-light text-dark fs-3 d-flex align-items-center justify-content-center" style={{ width: 50, height: 50 }}>
+                                <i className="bi bi-collection-fill" />
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div className="col-md-3 col-6">
-                    <div className="card border-0 shadow-sm p-3" style={{ borderLeft: '4px solid #f59e0b' }}>
+                    <div className="card border-0 shadow-sm p-3 h-100" style={{ borderLeft: '4px solid var(--accent-orange)' }}>
                         <div className="d-flex align-items-center justify-content-between">
                             <div>
-                                <div className="text-muted small fw-semibold">Pending Approval</div>
-                                <h3 className="mb-0 fw-bold text-warning">{summary.pending_count}</h3>
+                                <div className="text-muted extra-small fw-semibold text-uppercase">Pending Approval</div>
+                                <h3 className="mb-0 fw-bold text-warning mt-1">{summary.pending_count}</h3>
                             </div>
-                            <div className="fs-2 text-warning">
-                                <i className="bi bi-clock-history" />
+                            <div className="rounded-circle p-3 bg-warning-subtle text-warning-emphasis fs-3 d-flex align-items-center justify-content-center" style={{ width: 50, height: 50 }}>
+                                <i className="bi bi-hourglass-split" />
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div className="col-md-3 col-6">
-                    <div className="card border-0 shadow-sm p-3" style={{ borderLeft: '4px solid #0ea5e9' }}>
+                    <div className="card border-0 shadow-sm p-3 h-100" style={{ borderLeft: '4px solid var(--primary-teal)' }}>
                         <div className="d-flex align-items-center justify-content-between">
                             <div>
-                                <div className="text-muted small fw-semibold">Approved (Unpublished)</div>
-                                <h3 className="mb-0 fw-bold text-info">{summary.approved_count}</h3>
+                                <div className="text-muted extra-small fw-semibold text-uppercase">Approved (Unpublished)</div>
+                                <h3 className="mb-0 fw-bold text-info mt-1">{summary.approved_count}</h3>
                             </div>
-                            <div className="fs-2 text-info">
+                            <div className="rounded-circle p-3 bg-info-subtle text-info-emphasis fs-3 d-flex align-items-center justify-content-center" style={{ width: 50, height: 50 }}>
                                 <i className="bi bi-shield-check" />
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div className="col-md-3 col-6">
-                    <div className="card border-0 shadow-sm p-3" style={{ borderLeft: '4px solid #10b981' }}>
+                    <div className="card border-0 shadow-sm p-3 h-100" style={{ borderLeft: '4px solid #10b981' }}>
                         <div className="d-flex align-items-center justify-content-between">
                             <div>
-                                <div className="text-muted small fw-semibold">Published to Portal</div>
-                                <h3 className="mb-0 fw-bold text-success">{summary.published_count}</h3>
+                                <div className="text-muted extra-small fw-semibold text-uppercase">Published to Portal</div>
+                                <h3 className="mb-0 fw-bold text-success mt-1">{summary.published_count}</h3>
                             </div>
-                            <div className="fs-2 text-success">
+                            <div className="rounded-circle p-3 bg-success-subtle text-success-emphasis fs-3 d-flex align-items-center justify-content-center" style={{ width: 50, height: 50 }}>
                                 <i className="bi bi-globe2" />
                             </div>
                         </div>
@@ -344,26 +347,26 @@ export default function MarksApprovalPage() {
                 </div>
             </div>
 
-            {/* ── Main Filter & Search Card ───────────────────────────────── */}
+            {/* ── Main Filter & Search Control Bar ────────────────────────── */}
             <div className="card border-0 shadow-sm mb-4">
                 <div className="card-body p-3">
                     <div className="row g-3 align-items-center">
-                        <div className="col-md-4">
+                        <div className="col-md-5">
                             <div className="btn-group w-100" role="group">
                                 <button
-                                    className={`btn btn-sm ${activeTab === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                    className={`btn btn-sm ${activeTab === 'all' ? 'btn-dark fw-bold' : 'btn-outline-secondary'}`}
                                     onClick={() => setActiveTab('all')}
                                 >
                                     All Sheets
                                 </button>
                                 <button
-                                    className={`btn btn-sm ${activeTab === 'term_exam' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                    className={`btn btn-sm ${activeTab === 'term_exam' ? 'btn-dark fw-bold' : 'btn-outline-secondary'}`}
                                     onClick={() => setActiveTab('term_exam')}
                                 >
                                     Term Exams
                                 </button>
                                 <button
-                                    className={`btn btn-sm ${activeTab === 'test_paper' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                    className={`btn btn-sm ${activeTab === 'test_paper' ? 'btn-dark fw-bold' : 'btn-outline-secondary'}`}
                                     onClick={() => setActiveTab('test_paper')}
                                 >
                                     Class Tests
@@ -371,17 +374,17 @@ export default function MarksApprovalPage() {
                             </div>
                         </div>
 
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                             <div className="d-flex align-items-center gap-2">
-                                <span className="text-muted small fw-semibold">Status:</span>
+                                <span className="text-muted small fw-semibold text-nowrap">Status:</span>
                                 <select
-                                    className="form-select form-select-sm"
+                                    className="form-select form-select-sm border-2"
                                     value={statusFilter}
                                     onChange={e => setStatusFilter(e.target.value as any)}
                                 >
                                     <option value="all">All Statuses</option>
                                     <option value="pending">Pending Approval</option>
-                                    <option value="approved">Approved (Awaiting Publishing)</option>
+                                    <option value="approved">Approved (Unpublished)</option>
                                     <option value="published">Published</option>
                                 </select>
                             </div>
@@ -389,10 +392,10 @@ export default function MarksApprovalPage() {
 
                         <div className="col-md-4">
                             <div className="input-group input-group-sm">
-                                <span className="input-group-text bg-white"><i className="bi bi-search" /></span>
+                                <span className="input-group-text bg-white border-2 border-end-0"><i className="bi bi-search" /></span>
                                 <input
                                     type="text"
-                                    className="form-select-sm form-control"
+                                    className="form-control border-2 border-start-0"
                                     placeholder="Search by class, subject, teacher..."
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
@@ -419,17 +422,17 @@ export default function MarksApprovalPage() {
                     ) : (
                         <div className="table-responsive">
                             <table className="table table-hover align-middle mb-0">
-                                <thead className="table-light">
+                                <thead className="table-dark">
                                     <tr>
-                                        <th>Type</th>
+                                        <th style={{ width: '110px' }} className="ps-4">Type</th>
                                         <th>Title / Term</th>
                                         <th>Class & Section</th>
                                         <th>Subject</th>
-                                        <th>Students</th>
+                                        <th className="text-center">Students</th>
                                         <th>Status</th>
                                         <th>Submitted By</th>
                                         <th>Last Updated</th>
-                                        <th className="text-end">Actions</th>
+                                        <th className="text-end pe-4">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -437,8 +440,9 @@ export default function MarksApprovalPage() {
                                         const isTerm = s.sheet_type === 'term_exam';
                                         return (
                                             <tr key={s.id}>
-                                                <td>
+                                                <td className="ps-4">
                                                     <span className={`badge ${isTerm ? 'bg-indigo text-white' : 'bg-info text-dark'}`}>
+                                                        <i className={`bi ${isTerm ? 'bi-journal-bookmark' : 'bi-file-earmark-text'} me-1`} />
                                                         {isTerm ? 'Term Exam' : 'Class Test'}
                                                     </span>
                                                 </td>
@@ -449,32 +453,38 @@ export default function MarksApprovalPage() {
                                                     {s.description && <div className="text-muted extra-small">{s.description}</div>}
                                                 </td>
                                                 <td>
-                                                    <span className="fw-semibold">{s.class_name}</span> - <span className="text-muted">{s.section_name}</span>
+                                                    <span className="fw-semibold text-dark">{s.class_name}</span> - <span className="text-muted">{s.section_name}</span>
                                                 </td>
                                                 <td>
-                                                    <span className="badge bg-light text-dark border">{s.subject_name}</span>
+                                                    <span className="badge bg-light text-dark border fw-semibold">{s.subject_name}</span>
                                                 </td>
-                                                <td>
-                                                    <span className="badge bg-secondary">{s.student_count} Students</span>
+                                                <td className="text-center">
+                                                    <span className="badge bg-secondary rounded-pill px-3">{s.student_count} Students</span>
                                                 </td>
                                                 <td>
                                                     {s.status === 'published' ? (
-                                                        <span className="badge bg-success"><i className="bi bi-globe2 me-1" />Published</span>
+                                                        <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle px-3 py-2 rounded-pill">
+                                                            <i className="bi bi-globe2 me-1" />Published
+                                                        </span>
                                                     ) : s.status === 'approved' ? (
-                                                        <span className="badge bg-info text-dark"><i className="bi bi-check-circle me-1" />Approved</span>
+                                                        <span className="badge bg-info-subtle text-info-emphasis border border-info-subtle px-3 py-2 rounded-pill">
+                                                            <i className="bi bi-check-circle-fill me-1" />Approved
+                                                        </span>
                                                     ) : (
-                                                        <span className="badge bg-warning text-dark"><i className="bi bi-clock me-1" />Pending</span>
+                                                        <span className="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill">
+                                                            <i className="bi bi-clock-fill me-1" />Pending Approval
+                                                        </span>
                                                     )}
                                                 </td>
                                                 <td>
-                                                    <div className="small fw-semibold">{s.submitted_by_name}</div>
+                                                    <div className="small fw-semibold text-dark">{s.submitted_by_name}</div>
                                                 </td>
                                                 <td className="text-muted small">
                                                     {fmtDate(s.last_updated)}
                                                 </td>
-                                                <td className="text-end">
+                                                <td className="text-end pe-4">
                                                     <button
-                                                        className="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                        className="btn btn-sm btn-primary-custom rounded-pill px-3 fw-semibold shadow-xs"
                                                         onClick={() => openSheetDetail(s)}
                                                     >
                                                         <i className="bi bi-pencil-square me-1" />
@@ -493,16 +503,16 @@ export default function MarksApprovalPage() {
 
             {/* ── Review & Approval Modal ─────────────────────────────────── */}
             {selectedSheet && (
-                <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex={-1}>
+                <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} tabIndex={-1}>
                     <div className="modal-dialog modal-xl modal-dialog-scrollable">
-                        <div className="modal-content border-0 shadow">
+                        <div className="modal-content border-0 shadow-lg">
                             <div className="modal-header bg-dark text-white">
                                 <div>
-                                    <h5 className="modal-title mb-0 fw-bold">
+                                    <h5 className="modal-title mb-0 fw-bold d-flex align-items-center">
                                         <i className="bi bi-journal-check me-2 text-warning" />
                                         Review Marks Sheet — {selectedSheet.sheet_type === 'term_exam' ? selectedSheet.term_name : selectedSheet.test_name}
                                     </h5>
-                                    <div className="small text-muted">
+                                    <div className="small text-muted mt-1">
                                         {selectedSheet.class_name} ({selectedSheet.section_name}) | Subject: {selectedSheet.subject_name}
                                     </div>
                                 </div>
@@ -518,29 +528,29 @@ export default function MarksApprovalPage() {
                                 ) : (
                                     <>
                                         {/* Status Header Banner */}
-                                        <div className="d-flex align-items-center justify-content-between p-3 rounded-3 mb-4 bg-light border">
+                                        <div className="d-flex flex-wrap align-items-center justify-content-between p-3 rounded-3 mb-4 bg-light border">
                                             <div>
-                                                <span className="text-muted me-2">Current Status:</span>
+                                                <span className="text-muted me-2 fw-semibold">Current Status:</span>
                                                 {selectedSheet.status === 'published' ? (
                                                     <span className="badge bg-success fs-6"><i className="bi bi-globe2 me-1" />Published on Student Portal</span>
                                                 ) : selectedSheet.status === 'approved' ? (
-                                                    <span className="badge bg-info text-dark fs-6"><i className="bi bi-check-circle me-1" />Approved (Awaiting Principal Publishing)</span>
+                                                    <span className="badge bg-info text-dark fs-6"><i className="bi bi-check-circle-fill me-1" />Approved (Awaiting Principal Publishing)</span>
                                                 ) : (
-                                                    <span className="badge bg-warning text-dark fs-6"><i className="bi bi-clock me-1" />Pending Approval</span>
+                                                    <span className="badge bg-warning text-dark fs-6"><i className="bi bi-clock-fill me-1" />Pending Approval</span>
                                                 )}
                                             </div>
 
-                                            <div className="text-muted small">
-                                                Submitted by: <b>{selectedSheet.submitted_by_name}</b>
+                                            <div className="text-muted small mt-2 mt-md-0">
+                                                Submitted by: <b className="text-dark">{selectedSheet.submitted_by_name}</b>
                                             </div>
                                         </div>
 
                                         {/* Editable Students Marks Table */}
                                         <div className="table-responsive">
-                                            <table className="table table-bordered align-middle">
+                                            <table className="table table-bordered align-middle mb-0">
                                                 <thead className="table-dark">
                                                     <tr>
-                                                        <th style={{ width: '80px' }}>Roll No</th>
+                                                        <th style={{ width: '80px' }} className="text-center">Roll No</th>
                                                         <th>Student Name</th>
                                                         <th style={{ width: '140px' }}>Admission No</th>
                                                         <th style={{ width: '160px' }}>Obtained Marks</th>
@@ -550,13 +560,25 @@ export default function MarksApprovalPage() {
                                                 <tbody>
                                                     {detailStudents.map(st => (
                                                         <tr key={st.student_id}>
-                                                            <td className="fw-bold">{st.roll_no || '-'}</td>
-                                                            <td>{st.first_name} {st.last_name}</td>
-                                                            <td className="text-muted small">{st.admission_no || '-'}</td>
+                                                            <td className="fw-bold text-center">{st.roll_no || '—'}</td>
+                                                            <td>
+                                                                <div className="d-flex align-items-center gap-2">
+                                                                    <div
+                                                                        className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                                                        style={{ width: 32, height: 32, fontSize: '0.85rem' }}
+                                                                    >
+                                                                        {st.first_name[0]}{st.last_name[0] || ''}
+                                                                    </div>
+                                                                    <div className="fw-semibold text-dark">
+                                                                        {st.first_name} {st.last_name}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="text-muted small">{st.admission_no || '—'}</td>
                                                             <td>
                                                                 <input
                                                                     type="number"
-                                                                    className="form-control form-control-sm text-center fw-bold"
+                                                                    className="form-control form-control-sm text-center fw-bold border-2"
                                                                     value={obtainedMap[st.student_id] ?? ''}
                                                                     onChange={e => setObtainedMap(prev => ({ ...prev, [st.student_id]: e.target.value }))}
                                                                     placeholder="0.00"
@@ -581,14 +603,14 @@ export default function MarksApprovalPage() {
                             </div>
 
                             <div className="modal-footer bg-light justify-content-between">
-                                <button className="btn btn-outline-secondary" onClick={() => setSelectedSheet(null)}>
+                                <button className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setSelectedSheet(null)}>
                                     Close
                                 </button>
 
-                                <div className="d-flex align-items-center gap-2">
+                                <div className="d-flex flex-wrap align-items-center gap-2">
                                     {/* Save Marks Adjustment */}
                                     <button
-                                        className="btn btn-secondary"
+                                        className="btn btn-secondary rounded-pill px-3"
                                         onClick={handleSaveAdjustedMarks}
                                         disabled={savingMarks || loadingDetail}
                                     >
@@ -599,7 +621,7 @@ export default function MarksApprovalPage() {
                                     {/* Approve Button (Role Level >= 65) */}
                                     {canApprove && selectedSheet.status !== 'approved' && (
                                         <button
-                                            className="btn btn-info text-dark font-semibold"
+                                            className="btn btn-info text-dark font-semibold rounded-pill px-4"
                                             onClick={() => handleChangeStatus('approved')}
                                             disabled={updatingStatus}
                                         >
@@ -612,7 +634,7 @@ export default function MarksApprovalPage() {
                                     {canPublish ? (
                                         selectedSheet.status === 'published' ? (
                                             <button
-                                                className="btn btn-outline-warning"
+                                                className="btn btn-outline-warning rounded-pill px-3"
                                                 onClick={() => handleChangeStatus('pending')}
                                                 disabled={updatingStatus}
                                             >
@@ -621,7 +643,7 @@ export default function MarksApprovalPage() {
                                             </button>
                                         ) : (
                                             <button
-                                                className="btn btn-success fw-bold px-4"
+                                                className="btn btn-success fw-bold px-4 rounded-pill shadow-xs"
                                                 onClick={() => handleChangeStatus('published')}
                                                 disabled={updatingStatus}
                                             >
@@ -630,7 +652,7 @@ export default function MarksApprovalPage() {
                                             </button>
                                         )
                                     ) : (
-                                        <span className="badge bg-warning text-dark p-2 border">
+                                        <span className="badge bg-warning text-dark p-2 border rounded-pill">
                                             <i className="bi bi-lock-fill me-1" />
                                             Publishing Restricted (Requires Principal / VP / Admin)
                                         </span>
