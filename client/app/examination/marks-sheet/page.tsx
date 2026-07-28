@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { notify } from '@/app/utils/notify';
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com";
 
@@ -288,7 +289,9 @@ export default function ClassMarksSheetPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Failed to load marks sheet');
             setSheet(d as SheetPayload);
+            notify.success('Class marks sheet loaded successfully.');
         } catch (e: any) {
+            notify.error(e.message || 'Failed to load marks sheet');
             setMsg({ type: 'danger', text: e.message || 'Failed to load marks sheet' });
         } finally {
             setLoading(false);
@@ -314,6 +317,7 @@ export default function ClassMarksSheetPage() {
             const html = buildPrintHtml(d as SheetPayload);
             const win = window.open('', '_blank', 'width=1200,height=850');
             if (!win) {
+                notify.warning('Popup blocked. Please allow popups and try again.');
                 setMsg({ type: 'danger', text: 'Popup blocked. Please allow popups and try again.' });
                 return;
             }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { notify } from '@/app/utils/notify';
 
 type Term = { id: number; term_name: string };
 type ClassItem = { class_id: number; class_name: string };
@@ -372,8 +373,6 @@ export default function ResultCardPage() {
         } finally {
             setLoadingContext(false);
         }
-    };
-
     const loadStudents = async () => {
         if (!ready || !user?.id) return;
         setLoadingStudents(true);
@@ -392,9 +391,11 @@ export default function ResultCardPage() {
 
             setStudents(Array.isArray(d.students) ? d.students : []);
             setSelectedIds(new Set());
+            notify.success('Student list loaded.');
         } catch (e: any) {
             setStudents([]);
             setSelectedIds(new Set());
+            notify.error(e.message || 'Failed to load students');
             setMsg({ type: 'danger', text: e.message || 'Failed to load students' });
         } finally {
             setLoadingStudents(false);
@@ -418,12 +419,14 @@ export default function ResultCardPage() {
 
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Failed to load result card data');
+
         return d as CardPayload;
     };
 
     const openInNewTab = (html: string) => {
         const win = window.open('', '_blank', 'width=1100,height=900');
         if (!win) {
+            notify.warning('Popup blocked. Please allow popups for this site and try again.');
             setMsg({ type: 'danger', text: 'Popup blocked. Please allow popups for this site and try again.' });
             return;
         }
@@ -443,7 +446,9 @@ export default function ResultCardPage() {
                 throw new Error('No result data found for this student');
             }
             openInNewTab(buildPrintHtml(payload, false));
+            notify.success('Result card opened.');
         } catch (e: any) {
+            notify.error(e.message || 'Failed to open result card');
             setMsg({ type: 'danger', text: e.message || 'Failed to open result card' });
         } finally {
             setOpeningStudentId(null);
@@ -452,6 +457,7 @@ export default function ResultCardPage() {
 
     const handlePrintSelected = async () => {
         if (selectedIds.size === 0) {
+            notify.warning('Select one or more students to print.');
             setMsg({ type: 'warning', text: 'Select one or more students to print.' });
             return;
         }
@@ -460,12 +466,11 @@ export default function ResultCardPage() {
         setMsg(null);
         try {
             const payload = await fetchCards(Array.from(selectedIds));
-            if (!payload.students || payload.students.length === 0) {
-                throw new Error('No cards found for selected students');
-            }
             openInNewTab(buildPrintHtml(payload, true));
+            notify.success('Printing result cards.');
         } catch (e: any) {
-            setMsg({ type: 'danger', text: e.message || 'Bulk print failed' });
+            notify.error(e.message || 'Failed to print result cards');
+            setMsg({ type: 'danger', text: e.message || 'Failed to print result cards' });
         } finally {
             setPrinting(false);
         }

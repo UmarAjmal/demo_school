@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { notify } from '@/app/utils/notify';
 
 type Term = { id: number; term_name: string; start_date?: string | null; end_date?: string | null };
 type ClassItem = { class_id: number; class_name: string };
@@ -256,9 +257,11 @@ export default function ExaminationMarksPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Failed to save marks');
 
+            notify.success(d.message || 'Marks saved successfully.');
             setMsg({ type: 'success', text: d.message || 'Marks saved successfully.' });
             await loadSheet();
         } catch (e: any) {
+            notify.error(e.message || 'Save failed');
             setMsg({ type: 'danger', text: e.message || 'Save failed' });
         } finally {
             setSaving(false);
@@ -283,9 +286,11 @@ export default function ExaminationMarksPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Delete failed');
 
+            notify.success(d.message || 'Marks deleted successfully.');
             setMsg({ type: 'success', text: d.message || 'Marks deleted successfully.' });
             await loadSheet();
         } catch (e: any) {
+            notify.error(e.message || 'Delete failed');
             setMsg({ type: 'danger', text: e.message || 'Delete failed' });
         } finally {
             setDeleting(false);

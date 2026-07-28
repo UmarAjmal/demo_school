@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { notify } from '@/app/utils/notify';
 
 type TermItem = { id: number; term_name: string };
 type ClassItem = { class_id: number; class_name: string };
@@ -159,9 +160,9 @@ export default function TestMarkingPage() {
     // ── create test ───────────────────────────────────────────────────────────
     const handleCreate = async () => {
         if (!user?.id || !readyToList) return;
-        if (!formName.trim()) { setMsg({ type: 'warning', text: 'Test name is required.' }); return; }
+        if (!formName.trim()) { notify.warning('Test name is required.'); setMsg({ type: 'warning', text: 'Test name is required.' }); return; }
         const total = Number(formTotal);
-        if (!Number.isFinite(total) || total <= 0) { setMsg({ type: 'warning', text: 'Total marks must be greater than 0.' }); return; }
+        if (!Number.isFinite(total) || total <= 0) { notify.warning('Total marks must be greater than 0.'); setMsg({ type: 'warning', text: 'Total marks must be greater than 0.' }); return; }
 
         setCreating(true);
         setMsg(null);
@@ -184,11 +185,13 @@ export default function TestMarkingPage() {
 
             setFormName(''); setFormDesc(''); setFormTotal('');
             setShowCreateForm(false);
+            notify.success('Test created. Select it below to enter marks.');
             setMsg({ type: 'success', text: 'Test created. Select it below to enter marks.' });
             await loadTests();
             // auto-open newly created test
             setSelectedTest(d.test_id);
         } catch (e: any) {
+            notify.error(e.message || 'Create failed');
             setMsg({ type: 'danger', text: e.message || 'Create failed' });
         } finally {
             setCreating(false);
@@ -215,6 +218,7 @@ export default function TestMarkingPage() {
             setRemarksMap(rm);
         } catch (e: any) {
             setSheet(null);
+            notify.error(e.message || 'Failed to load marks sheet');
             setMsg({ type: 'danger', text: e.message || 'Failed to load marks sheet' });
         } finally {
             setLoadingSheet(false);
@@ -236,6 +240,7 @@ export default function TestMarkingPage() {
             if (val !== '' && val !== undefined) {
                 const n = Number(val);
                 if (!Number.isFinite(n) || n < 0 || n > totalMarks) {
+                    notify.warning(`Invalid marks for ${s.first_name} ${s.last_name}. Must be 0–${totalMarks}.`);
                     setMsg({ type: 'danger', text: `Invalid marks for ${s.first_name} ${s.last_name}. Must be 0–${totalMarks}.` });
                     return;
                 }
@@ -259,10 +264,12 @@ export default function TestMarkingPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Failed to save marks');
 
+            notify.success(d.message || 'Marks saved.');
             setMsg({ type: 'success', text: d.message || 'Marks saved.' });
             await loadSheet(sheet.test.test_id);
             await loadTests();
         } catch (e: any) {
+            notify.error(e.message || 'Save failed');
             setMsg({ type: 'danger', text: e.message || 'Save failed' });
         } finally {
             setSaving(false);
@@ -280,9 +287,11 @@ export default function TestMarkingPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Delete failed');
             if (selectedTest === testId) { setSelectedTest(null); setSheet(null); }
+            notify.success(d.message || 'Test deleted.');
             setMsg({ type: 'success', text: d.message || 'Test deleted.' });
             await loadTests();
         } catch (e: any) {
+            notify.error(e.message || 'Delete failed');
             setMsg({ type: 'danger', text: e.message || 'Delete failed' });
         } finally {
             setDeleting(false);
