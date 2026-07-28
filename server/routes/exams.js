@@ -2167,11 +2167,11 @@ router.post('/approvals/update-marks', async (req, res) => {
                     ? Number(row.obtained_marks) : null;
 
                 await client.query(
-                    `INSERT INTO exam_marks (term_id, class_id, section_id, subject_id, student_id, total_marks, obtained_marks, status)
+                    `INSERT INTO exam_marks (student_id, subject_id, term_id, class_id, section_id, total_marks, obtained_marks, status)
                      VALUES ($1,$2,$3,$4,$5,$6,$7, 'pending')
-                     ON CONFLICT (term_id, class_id, section_id, subject_id, student_id)
+                     ON CONFLICT (student_id, subject_id, term_id)
                      DO UPDATE SET obtained_marks = EXCLUDED.obtained_marks, total_marks = EXCLUDED.total_marks, updated_at = NOW()`,
-                    [termId, classId, sectionId, subjectId, studentId, total, obtained]
+                    [studentId, subjectId, termId, classId, sectionId, total, obtained]
                 );
             }
         } else if (sheetType === 'test_paper') {
@@ -2184,8 +2184,8 @@ router.post('/approvals/update-marks', async (req, res) => {
                 const remarks   = String(row.remarks || '').trim() || null;
 
                 await client.query(
-                    `INSERT INTO test_marks (test_id, paper_id, student_id, obtained_marks, remarks)
-                     VALUES ($1,$1,$2,$3,$4)
+                    `INSERT INTO test_marks (test_id, student_id, obtained_marks, remarks)
+                     VALUES ($1,$2,$3,$4)
                      ON CONFLICT (test_id, student_id)
                      DO UPDATE SET obtained_marks = EXCLUDED.obtained_marks, remarks = EXCLUDED.remarks`,
                     [testId, studentId, obtained, remarks]
