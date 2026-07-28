@@ -1865,4 +1865,423 @@ router.delete('/tests/:test_id', async (req, res) => {
     }
 });
 
+// ── GET /approvals/list ──────────────────────────────────────────────────────
+router.get('/approvals/list', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await ensureTestTables();
+        const userId     = parseUserId(req.query.user_id);
+        const sheetType  = String(req.query.sheet_type || 'all');
+        const statusFilter = String(req.query.status || 'all');
+        const classId    = req.query.class_id ? Number(req.query.class_id) : null;
+        const sectionId  = req.query.section_id ? Number(req.query.section_id) : null;
+
+        if (!userId) return res.status(400).json({ error: 'user_id is required' });
+
+        const ctx = await getUserContext(client, userId);
+        if (ctx.error) return res.status(ctx.error.status).json({ error: ctx.error.message });
+
+        const canPublish = (ctx.user.role_level || 0) >= 90;
+        const canApprove = (ctx.user.role_level || 0) >= 65;
+
+        let termSheets = [];
+        let testPapers = [];
+
+        // 1. Fetch Term Exam Sheets
+        if (sheetType === 'all' || sheetType === 'term_exam') {
+            let query = `
+                SELECT 
+                    em.term_id, t.term_name,
+                    em.class_id, c.class_name,
+                    em.section_id, sec.section_name,
+                    em.subject_id, sub.subject_name,
+                    COALESCE(esa.status, em.status, 'pending') AS status,
+                    COUNT(DISTINCT em.student_id)::int AS student_count,
+                    MAX(em.updated_at) AS last_updated,
+                    COALESCE(u_sub.username, 'Teacher') AS submitted_by_name,
+                    COALESCE(u_app.username, '-') AS approved_by_name,
+                    COALESCE(u_pub.username, '-') AS published_by_name
+                FROM exam_marks em
+                JOIN academic_terms t ON t.id = em.term_id
+                JOIN classes c ON c.class_id = em.class_id
+                JOIN sections sec ON sec.section_id = em.section_id
+                JOIN subjects sub ON sub.subject_id = em.subject_id
+                LEFT JOIN exam_sheet_approvals esa 
+                  ON esa.sheet_type = 'term_exam' 
+                 AND esa.term_id = em.term_id 
+                 AND esa.class_id = em.class_id 
+                 AND esa.section_id = em.section_id 
+                 AND esa.subject_id = em.subject_id
+                LEFT JOIN app_users u_sub ON u_sub.id = esa.submitted_by_user_id
+                LEFT JOIN app_users u_app ON u_app.id = esa.approved_by_user_id
+                LEFT JOIN app_users u_pub ON u_pub.id = esa.published_by_user_id
+                WHERE 1=1
+            `;
+            const params = [];
+            if (classId) { params.push(classId); query += ` AND em.class_id = $${params.length}`; }
+            if (sectionId) { params.push(sectionId); query += ` AND em.section_id = $${params.length}`; }
+
+            query += ` GROUP BY em.term_id, t.term_name, em.class_id, c.class_name, em.section_id, sec.section_name, em.subject_id, sub.subject_name, esa.status, em.status, u_sub.username, u_app.username, u_pub.username ORDER BY last_updated DESC`;
+
+            const resTerm = await client.query(query, params);
+            termSheets = resTerm.rows.map(r => ({
+                sheet_type: 'term_exam',
+                id: `term_${r.term_id}_${r.class_id}_${r.section_id}_${r.subject_id}`,
+                term_id: r.term_id,
+                term_name: r.term_name,
+                class_id: r.class_id,
+                class_name: r.class_name,
+                section_id: r.section_id,
+                section_name: r.section_name,
+                subject_id: r.subject_id,
+                subject_name: r.subject_name,
+                status: r.status || 'pending',
+                student_count: r.student_count,
+                submitted_by_name: r.submitted_by_name,
+                approved_by_name: r.approved_by_name,
+                published_by_name: r.published_by_name,
+                last_updated: r.last_updated
+            }));
+        }
+
+        // 2. Fetch Class Test Papers
+        if (sheetType === 'all' || sheetType === 'test_paper') {
+            let query = `
+                SELECT 
+                    COALESCE(tp.test_id, tp.paper_id) AS test_id,
+                    COALESCE(tp.test_name, tp.paper_name) AS test_name,
+                    tp.description, tp.total_marks,
+                    tp.class_id, c.class_name,
+                    tp.section_id, sec.section_name,
+                    tp.subject_id, sub.subject_name,
+                    COALESCE(esa.status, tp.status, 'pending') AS status,
+                    (SELECT COUNT(*) FROM test_marks tm WHERE tm.test_id = COALESCE(tp.test_id, tp.paper_id) OR tm.paper_id = COALESCE(tp.test_id, tp.paper_id))::int AS student_count,
+                    tp.created_at AS last_updated,
+                    COALESCE(u_sub.username, e.first_name || ' ' || e.last_name, 'Teacher') AS submitted_by_name,
+                    COALESCE(u_app.username, '-') AS approved_by_name,
+                    COALESCE(u_pub.username, '-') AS published_by_name
+                FROM test_papers tp
+                JOIN classes c ON c.class_id = tp.class_id
+                JOIN sections sec ON sec.section_id = tp.section_id
+                JOIN subjects sub ON sub.subject_id = tp.subject_id
+                LEFT JOIN employees e ON e.employee_id = tp.created_by_employee_id
+                LEFT JOIN exam_sheet_approvals esa 
+                  ON esa.sheet_type = 'test_paper' 
+                 AND esa.test_id = COALESCE(tp.test_id, tp.paper_id)
+                LEFT JOIN app_users u_sub ON u_sub.id = esa.submitted_by_user_id
+                LEFT JOIN app_users u_app ON u_app.id = esa.approved_by_user_id
+                LEFT JOIN app_users u_pub ON u_pub.id = esa.published_by_user_id
+                WHERE 1=1
+            `;
+            const params = [];
+            if (classId) { params.push(classId); query += ` AND tp.class_id = $${params.length}`; }
+            if (sectionId) { params.push(sectionId); query += ` AND tp.section_id = $${params.length}`; }
+
+            query += ` ORDER BY tp.created_at DESC`;
+
+            const resTest = await client.query(query, params);
+            testPapers = resTest.rows.map(r => ({
+                sheet_type: 'test_paper',
+                id: `test_${r.test_id}`,
+                test_id: r.test_id,
+                test_name: r.test_name,
+                description: r.description,
+                total_marks: r.total_marks,
+                class_id: r.class_id,
+                class_name: r.class_name,
+                section_id: r.section_id,
+                section_name: r.section_name,
+                subject_id: r.subject_id,
+                subject_name: r.subject_name,
+                status: r.status || 'pending',
+                student_count: r.student_count,
+                submitted_by_name: r.submitted_by_name,
+                approved_by_name: r.approved_by_name,
+                published_by_name: r.published_by_name,
+                last_updated: r.last_updated
+            }));
+        }
+
+        let allSheets = [...termSheets, ...testPapers];
+
+        if (statusFilter !== 'all') {
+            allSheets = allSheets.filter(s => s.status === statusFilter);
+        }
+
+        const pending_count = allSheets.filter(s => s.status === 'pending').length;
+        const approved_count = allSheets.filter(s => s.status === 'approved').length;
+        const published_count = allSheets.filter(s => s.status === 'published').length;
+
+        res.json({
+            can_approve: canApprove,
+            can_publish: canPublish,
+            user_role: ctx.user.role_name,
+            role_level: ctx.user.role_level,
+            summary: {
+                total_sheets: allSheets.length,
+                pending_count,
+                approved_count,
+                published_count
+            },
+            sheets: allSheets
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
+// ── GET /approvals/sheet-detail ──────────────────────────────────────────────
+router.get('/approvals/sheet-detail', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await ensureTestTables();
+        const userId    = parseUserId(req.query.user_id);
+        const sheetType = String(req.query.sheet_type || '');
+
+        if (!userId || !sheetType) return res.status(400).json({ error: 'user_id and sheet_type are required' });
+
+        const ctx = await getUserContext(client, userId);
+        if (ctx.error) return res.status(ctx.error.status).json({ error: ctx.error.message });
+
+        const canPublish = (ctx.user.role_level || 0) >= 90;
+        const canApprove = (ctx.user.role_level || 0) >= 65;
+
+        if (sheetType === 'term_exam') {
+            const termId    = Number(req.query.term_id);
+            const classId   = Number(req.query.class_id);
+            const sectionId = Number(req.query.section_id);
+            const subjectId = Number(req.query.subject_id);
+
+            const metaRes = await client.query(
+                `SELECT t.term_name, c.class_name, sec.section_name, sub.subject_name
+                 FROM academic_terms t, classes c, sections sec, subjects sub
+                 WHERE t.id = $1 AND c.class_id = $2 AND sec.section_id = $3 AND sub.subject_id = $4`,
+                [termId, classId, sectionId, subjectId]
+            );
+
+            const studentsRes = await client.query(
+                `SELECT s.student_id, s.first_name, s.last_name, s.admission_no, s.roll_no,
+                        em.mark_id, em.obtained_marks, em.total_marks, COALESCE(em.status, 'pending') AS status
+                 FROM students s
+                 LEFT JOIN exam_marks em 
+                   ON em.student_id = s.student_id 
+                  AND em.term_id = $1 
+                  AND em.class_id = $2 
+                  AND em.section_id = $3 
+                  AND em.subject_id = $4
+                 WHERE s.class_id = $2 AND s.section_id = $3 AND s.status = 'Active'
+                 ORDER BY s.roll_no ASC NULLS LAST, s.first_name ASC`,
+                [termId, classId, sectionId, subjectId]
+            );
+
+            const statusRes = await client.query(
+                `SELECT status FROM exam_sheet_approvals 
+                 WHERE sheet_type = 'term_exam' AND term_id = $1 AND class_id = $2 AND section_id = $3 AND subject_id = $4 LIMIT 1`,
+                [termId, classId, sectionId, subjectId]
+            );
+
+            const currentStatus = statusRes.rows[0]?.status || studentsRes.rows[0]?.status || 'pending';
+
+            res.json({
+                sheet_type: 'term_exam',
+                meta: metaRes.rows[0] || {},
+                status: currentStatus,
+                can_approve: canApprove,
+                can_publish: canPublish,
+                students: studentsRes.rows
+            });
+
+        } else if (sheetType === 'test_paper') {
+            const testId = Number(req.query.test_id);
+
+            const testRes = await client.query(
+                `SELECT tp.*, sub.subject_name, c.class_name, sec.section_name, COALESCE(tp.status, 'pending') AS status
+                 FROM test_papers tp
+                 JOIN subjects sub ON sub.subject_id = tp.subject_id
+                 JOIN sections sec ON sec.section_id = tp.section_id
+                 JOIN classes c ON c.class_id = tp.class_id
+                 WHERE (tp.test_id = $1 OR tp.paper_id = $1)`,
+                [testId]
+            );
+            if (testRes.rows.length === 0) return res.status(404).json({ error: 'Test paper not found' });
+            const test = testRes.rows[0];
+
+            const studentsRes = await client.query(
+                `SELECT s.student_id, s.first_name, s.last_name, s.admission_no, s.roll_no,
+                        tm.test_mark_id, tm.obtained_marks, tm.remarks
+                 FROM students s
+                 LEFT JOIN test_marks tm ON tm.student_id = s.student_id AND (tm.test_id = $1 OR tm.paper_id = $1)
+                 WHERE s.class_id = $2 AND s.section_id = $3 AND s.status = 'Active'
+                 ORDER BY s.roll_no ASC NULLS LAST, s.first_name ASC`,
+                [testId, test.class_id, test.section_id]
+            );
+
+            res.json({
+                sheet_type: 'test_paper',
+                test,
+                status: test.status || 'pending',
+                can_approve: canApprove,
+                can_publish: canPublish,
+                students: studentsRes.rows
+            });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
+// ── POST /approvals/update-marks ─────────────────────────────────────────────
+router.post('/approvals/update-marks', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await ensureTestTables();
+        const userId    = parseUserId(req.body.user_id);
+        const sheetType = String(req.body.sheet_type || '');
+        const marks     = Array.isArray(req.body.marks) ? req.body.marks : [];
+
+        if (!userId || !sheetType || marks.length === 0) {
+            return res.status(400).json({ error: 'user_id, sheet_type, and marks are required' });
+        }
+
+        const ctx = await getUserContext(client, userId);
+        if (ctx.error) return res.status(ctx.error.status).json({ error: ctx.error.message });
+
+        await client.query('BEGIN');
+
+        if (sheetType === 'term_exam') {
+            const termId    = Number(req.body.term_id);
+            const classId   = Number(req.body.class_id);
+            const sectionId = Number(req.body.section_id);
+            const subjectId = Number(req.body.subject_id);
+            const total     = Number(req.body.total_marks || 100);
+
+            for (const row of marks) {
+                const studentId = Number(row.student_id);
+                const obtained  = (row.obtained_marks !== null && row.obtained_marks !== '' && row.obtained_marks !== undefined)
+                    ? Number(row.obtained_marks) : null;
+
+                await client.query(
+                    `INSERT INTO exam_marks (term_id, class_id, section_id, subject_id, student_id, total_marks, obtained_marks, status)
+                     VALUES ($1,$2,$3,$4,$5,$6,$7, 'pending')
+                     ON CONFLICT (term_id, class_id, section_id, subject_id, student_id)
+                     DO UPDATE SET obtained_marks = EXCLUDED.obtained_marks, total_marks = EXCLUDED.total_marks, updated_at = NOW()`,
+                    [termId, classId, sectionId, subjectId, studentId, total, obtained]
+                );
+            }
+        } else if (sheetType === 'test_paper') {
+            const testId = Number(req.body.test_id);
+
+            for (const row of marks) {
+                const studentId = Number(row.student_id);
+                const obtained  = (row.obtained_marks !== null && row.obtained_marks !== '' && row.obtained_marks !== undefined)
+                    ? Number(row.obtained_marks) : null;
+                const remarks   = String(row.remarks || '').trim() || null;
+
+                await client.query(
+                    `INSERT INTO test_marks (test_id, paper_id, student_id, obtained_marks, remarks)
+                     VALUES ($1,$1,$2,$3,$4)
+                     ON CONFLICT (test_id, student_id)
+                     DO UPDATE SET obtained_marks = EXCLUDED.obtained_marks, remarks = EXCLUDED.remarks`,
+                    [testId, studentId, obtained, remarks]
+                );
+            }
+        }
+
+        await client.query('COMMIT');
+        res.json({ message: 'Student marks updated successfully.' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
+// ── POST /approvals/change-status ───────────────────────────────────────────
+router.post('/approvals/change-status', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await ensureTestTables();
+        const userId       = parseUserId(req.body.user_id);
+        const sheetType    = String(req.body.sheet_type || '');
+        const targetStatus = String(req.body.target_status || '');
+
+        if (!userId || !sheetType || !targetStatus) {
+            return res.status(400).json({ error: 'user_id, sheet_type, and target_status are required' });
+        }
+
+        const ctx = await getUserContext(client, userId);
+        if (ctx.error) return res.status(ctx.error.status).json({ error: ctx.error.message });
+
+        const canPublish = (ctx.user.role_level || 0) >= 90; // VP, Principal, Admin
+        const canApprove = (ctx.user.role_level || 0) >= 65; // Coordinator, Head Teacher, VP, Principal, Admin
+
+        if (targetStatus === 'published' && !canPublish) {
+            return res.status(403).json({ error: 'Only Vice Principal, Principal, or Administrator can publish marks to Student Portal.' });
+        }
+        if (targetStatus === 'approved' && !canApprove) {
+            return res.status(403).json({ error: 'You do not have permission to approve marks.' });
+        }
+
+        await client.query('BEGIN');
+
+        if (sheetType === 'term_exam') {
+            const termId    = Number(req.body.term_id);
+            const classId   = Number(req.body.class_id);
+            const sectionId = Number(req.body.section_id);
+            const subjectId = Number(req.body.subject_id);
+
+            await client.query(
+                `UPDATE exam_marks 
+                 SET status = $1 
+                 WHERE term_id = $2 AND class_id = $3 AND section_id = $4 AND subject_id = $5`,
+                [targetStatus, termId, classId, sectionId, subjectId]
+            );
+
+            await client.query(
+                `INSERT INTO exam_sheet_approvals (sheet_type, term_id, class_id, section_id, subject_id, status, submitted_by_user_id, approved_by_user_id, approved_at, published_by_user_id, published_at)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7, CASE WHEN $6 = 'approved' THEN $7 ELSE NULL END, CASE WHEN $6 = 'approved' THEN NOW() ELSE NULL END, CASE WHEN $6 = 'published' THEN $7 ELSE NULL END, CASE WHEN $6 = 'published' THEN NOW() ELSE NULL END)`,
+                [sheetType, termId, classId, sectionId, subjectId, targetStatus, userId]
+            );
+        } else if (sheetType === 'test_paper') {
+            const testId = Number(req.body.test_id);
+
+            await client.query(
+                `UPDATE test_papers SET status = $1 WHERE (test_id = $2 OR paper_id = $2)`,
+                [targetStatus, testId]
+            );
+
+            await client.query(
+                `INSERT INTO exam_sheet_approvals (sheet_type, test_id, class_id, section_id, status, submitted_by_user_id, approved_by_user_id, approved_at, published_by_user_id, published_at)
+                 SELECT 'test_paper', $1, class_id, section_id, $2, $3, CASE WHEN $2 = 'approved' THEN $3 ELSE NULL END, CASE WHEN $2 = 'approved' THEN NOW() ELSE NULL END, CASE WHEN $2 = 'published' THEN $3 ELSE NULL END, CASE WHEN $2 = 'published' THEN NOW() ELSE NULL END
+                 FROM test_papers WHERE (test_id = $1 OR paper_id = $1) LIMIT 1`,
+                [testId, targetStatus, userId]
+            );
+        }
+
+        await client.query('COMMIT');
+
+        const statusLabels = {
+            pending: 'Reverted to Draft / Pending',
+            approved: 'Approved successfully.',
+            published: 'Published to Student Portal successfully!'
+        };
+
+        res.json({ message: statusLabels[targetStatus] || 'Status updated successfully.', status: targetStatus });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
 module.exports = router;

@@ -169,6 +169,31 @@ async function runEssentialMigrations() {
             CREATE INDEX IF NOT EXISTS idx_test_papers_class_sec_sub ON test_papers(class_id, section_id, subject_id);
         `);
 
+        // 9. Exam & Test Marks Approval Workflow Migration
+        console.log("   → Checking exam & test marks approval columns & tables...");
+        await client.query(`
+            ALTER TABLE exam_marks ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending';
+            ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending';
+            
+            CREATE TABLE IF NOT EXISTS exam_sheet_approvals (
+                approval_id SERIAL PRIMARY KEY,
+                sheet_type VARCHAR(20) NOT NULL,
+                term_id INTEGER REFERENCES academic_terms(id) ON DELETE CASCADE,
+                class_id INTEGER NOT NULL REFERENCES classes(class_id) ON DELETE CASCADE,
+                section_id INTEGER NOT NULL REFERENCES sections(section_id) ON DELETE CASCADE,
+                subject_id INTEGER REFERENCES subjects(subject_id) ON DELETE CASCADE,
+                test_id INTEGER,
+                status VARCHAR(20) DEFAULT 'pending',
+                submitted_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
+                approved_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
+                approved_at TIMESTAMP,
+                published_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
+                published_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         await client.query('COMMIT');
         console.log("✅ All essential migrations completed successfully!");
     } catch (err) {
