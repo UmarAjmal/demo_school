@@ -957,7 +957,7 @@ export default function NewAdmission() {
                             </div>
                             <div className="card-body p-4">
 
-                                {/* FAMILY FEE MODE — when sibling is selected */}
+                                {/* FAMILY FEE MODE when sibling is selected */}
                                 {hasSibling && selectedSiblings.length > 0 && selectedSiblings[0].family_id ? (
                                     <>
                                         <div className="alert alert-warning d-flex align-items-start gap-2 mb-3">
@@ -1019,7 +1019,7 @@ export default function NewAdmission() {
                                         </div>
                                     </>
                                 ) : (
-                                    /* INDIVIDUAL FEE MODE — normal student */
+                                    /* INDIVIDUAL FEE MODE normal student */
                                     <>
                                         <div className="alert alert-info">
                                             <i className="bi bi-info-circle me-2"></i> Set the initial fee obligations for this student.

@@ -53,7 +53,7 @@ function VoucherSlip({ v, serial, month, year, school, filterClassId }: { v: Vou
     if (totalPaid > 0) feeRows.push({ sr: sr++, desc: 'Amount Already Paid', amount: -totalPaid });
     const grandTotal = parseFloat(v.total_family_amount as any) - totalPaid;
 
-    // Fixed 9 rows — matches template exactly
+    // Fixed 9 rows matches template exactly
     // For family vouchers: use family_members from backend (all active siblings)
     // Sort so filtered-class students appear first when a class filter is active
     type StudentRow = { first_name: string; last_name: string; father_name?: string; class_name?: string; section_name?: string; category?: string } | null;
@@ -590,11 +590,11 @@ export default function PrintSlipsPage() {
                                     <p className="text-muted small">Marking as printed prevents duplicate vouchers from being issued.</p>
                                     <div className="alert alert-info py-2 small mb-0">
                                         <i className="bi bi-info-circle me-1"></i>
-                                        {selectedVouchers.filter(v => v.voucher_type === 'family').length} family voucher(s) — all siblings marked together.
+                                        {selectedVouchers.filter(v => v.voucher_type === 'family').length} family voucher(s) all siblings marked together.
                                     </div>
                                 </div>
                                 <div className="modal-footer">
-                                    <button className="btn btn-secondary-custom" onClick={() => setShowConfirm(false)}>No — Print Again</button>
+                                    <button className="btn btn-secondary-custom" onClick={() => setShowConfirm(false)}>No Print Again</button>
                                     <button className="btn btn-primary-custom fw-bold px-4" onClick={markAsPrinted} disabled={markingPrinted}>
                                         {markingPrinted ? <><span className="spinner-border spinner-border-sm me-2"></span>Marking...</> : <><i className="bi bi-check-circle me-2"></i>Yes, Mark as Printed</>}
                                     </button>

@@ -1146,7 +1146,7 @@ router.get('/class-marks-sheet', async (req, res) => {
             markMap.set(`${mark.student_id}:${mark.subject_id}`, mark);
         }
 
-        // School info — from General Information settings (school_settings table)
+        // School info from General Information settings (school_settings table)
         const systemRes = await client.query(
             `SELECT school_name, address, contact_number, logo_url FROM school_settings LIMIT 1`
         );
@@ -1206,7 +1206,7 @@ router.get('/class-marks-sheet', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STUDENT ACADEMICS — Full Performance View for Profile Page
+// STUDENT ACADEMICS Full Performance View for Profile Page
 // ─────────────────────────────────────────────────────────────────────────────
 
 router.get('/student-academics/:student_id', async (req, res) => {
@@ -1362,7 +1362,7 @@ router.get('/student-academics/:student_id', async (req, res) => {
         if (attPct  !== null)  { composite = (composite || 0) + attPct   * 10; compositeWeights += 10; }
         if (composite !== null && compositeWeights > 0) composite = +(composite / compositeWeights).toFixed(1);
 
-        // Trend analysis — linear regression slope on term percentages
+        // Trend analysis linear regression slope on term percentages
         let trend = 'insufficient_data';
         let trendSlope = 0;
         if (termPcts.length >= 2) {
@@ -1426,7 +1426,7 @@ function levelFromPct(pct) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TEST MARKING — Tables + Routes
+// TEST MARKING Tables + Routes
 // ─────────────────────────────────────────────────────────────────────────────
 
 let ensureTestTablesPromise = null;
@@ -1877,7 +1877,7 @@ router.post('/tests/:test_id/save', async (req, res) => {
     }
 });
 
-// DELETE /tests/:test_id — admin only
+// DELETE /tests/:test_id admin only
 router.delete('/tests/:test_id', async (req, res) => {
     const client = await pool.connect();
     try {

@@ -331,7 +331,7 @@ export default function ExaminationMarksPage() {
 
     return (
         <div className="page-wrap" style={{ backgroundColor: 'var(--bg-main)', minHeight: '100vh', paddingBottom: '3rem' }}>
-            
+
             {/* ── Page Header ─────────────────────────────────────────────── */}
             <div className="d-flex flex-wrap align-items-center justify-content-between mb-4">
                 <div>
@@ -441,7 +441,7 @@ export default function ExaminationMarksPage() {
                         <div>
                             <h5 className="mb-0 fw-bold text-dark">
                                 <i className="bi bi-file-earmark-spreadsheet me-2 text-success" />
-                                Marking Sheet — {students.length} Students
+                                Marking Sheet {students.length} Students
                             </h5>
                             <div className="text-muted extra-small">
                                 Enter student marks below. Saved marks will enter approval workflow before publishing.

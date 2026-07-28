@@ -125,7 +125,7 @@ export default function FeePlansPage() {
 
     const isTuitionHead = (name: string) => name.toLowerCase().includes('tuition');
     const isOpbHead = (type: string) => type === 'prev_balance';
-    // Tuition (per-student) and Previous Balance (per-family) amounts are auto — exclude from plan fixed total
+    // Tuition (per-student) and Previous Balance (per-family) amounts are auto exclude from plan fixed total
     const totalAmount = form.heads
         .filter(h => !isTuitionHead(h.head_name) && !isOpbHead(h.head_type))
         .reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);

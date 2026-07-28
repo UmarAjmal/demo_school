@@ -290,7 +290,7 @@ export default function ClassMarksSheetPage() {
 
     return (
         <div className="page-wrap" style={{ backgroundColor: 'var(--bg-main)', minHeight: '100vh', paddingBottom: '3rem' }}>
-            
+
             {/* Page Header */}
             <div className="d-flex flex-wrap align-items-center justify-content-between mb-4">
                 <div>
@@ -363,7 +363,7 @@ export default function ClassMarksSheetPage() {
                             <h5 className="mb-0 fw-bold text-dark">
                                 <i className="bi bi-journal-text me-2 text-success" />
                                 {loading ? 'Loading Sheet...' : sheet
-                                    ? `${sheet.meta.class_name} (${sheet.meta.section_name}) — ${sheet.meta.term_name}`
+                                    ? `${sheet.meta.class_name} (${sheet.meta.section_name}) ${sheet.meta.term_name}`
                                     : 'Class Marks Sheet'}
                             </h5>
                             {sheet && (

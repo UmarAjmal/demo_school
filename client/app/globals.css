@@ -243,7 +243,7 @@ input[type=number] {
   border-right: 1px solid rgba(255,255,255,0.04);
   box-shadow: 3px 0 20px rgba(0,0,0,0.3);
   flex-shrink: 0; z-index: 50; overflow: hidden;
-  /* Width transition only — no layout shift on content */
+  /* Width transition only no layout shift on content */
   transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: width;
 }
@@ -271,7 +271,7 @@ input[type=number] {
 /* Collapsed: no padding, toggle centred */
 .sl-closed .sl-header { padding: 0; justify-content: center; }
 
-/* Brand wrapper — collapses away in closed state */
+/* Brand wrapper collapses away in closed state */
 .sl-brand {
   flex: 1; min-width: 0; overflow: hidden;
   display: flex; align-items: center;
@@ -341,7 +341,7 @@ input[type=number] {
 }
 .sl-item.sl-active .sl-icon-wrap i { color: #FE7F2D; }
 
-/* Icon cell — fixed width so collapsed = icon centred */
+/* Icon cell fixed width so collapsed = icon centred */
 .sl-icon {
   font-size: 1.05rem;
   width: 64px; min-width: 64px;
@@ -455,7 +455,7 @@ input[type=number] {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   COMPREHENSIVE MOBILE RESPONSIVE OVERRIDES  —  ALL PAGES
+   COMPREHENSIVE MOBILE RESPONSIVE OVERRIDES   ALL PAGES
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ── Always-on: prevent horizontal overflow sitewide ─────────────────── */

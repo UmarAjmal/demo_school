@@ -301,7 +301,7 @@ export default function TestMarkingPage() {
 
     return (
         <div className="page-wrap" style={{ backgroundColor: 'var(--bg-main)', minHeight: '100vh', paddingBottom: '3rem' }}>
-            
+
             {/* Page Header */}
             <div className="d-flex flex-wrap align-items-center justify-content-between mb-4">
                 <div>
@@ -516,7 +516,7 @@ export default function TestMarkingPage() {
                         <div>
                             <h5 className="mb-0 fw-bold text-dark">
                                 <i className="bi bi-pencil-square me-2 text-success" />
-                                Marking Test Sheet — {sheet?.test.test_name || 'Class Test'}
+                                Marking Test Sheet {sheet?.test.test_name || 'Class Test'}
                             </h5>
                             {sheet && (
                                 <div className="text-muted extra-small mt-1">

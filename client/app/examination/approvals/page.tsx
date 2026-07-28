@@ -251,7 +251,7 @@ export default function MarksApprovalPage() {
 
     return (
         <div className="page-wrap" style={{ backgroundColor: 'var(--bg-main)', minHeight: '100vh', paddingBottom: '3rem' }}>
-            
+
             {/* ── Page Header ─────────────────────────────────────────────── */}
             <div className="d-flex flex-wrap align-items-center justify-content-between mb-4">
                 <div>
@@ -510,7 +510,7 @@ export default function MarksApprovalPage() {
                                 <div>
                                     <h5 className="modal-title mb-0 fw-bold d-flex align-items-center">
                                         <i className="bi bi-journal-check me-2 text-warning" />
-                                        Review Marks Sheet — {selectedSheet.sheet_type === 'term_exam' ? selectedSheet.term_name : selectedSheet.test_name}
+                                        Review Marks Sheet {selectedSheet.sheet_type === 'term_exam' ? selectedSheet.term_name : selectedSheet.test_name}
                                     </h5>
                                     <div className="small text-muted mt-1">
                                         {selectedSheet.class_name} ({selectedSheet.section_name}) | Subject: {selectedSheet.subject_name}

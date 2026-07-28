@@ -4,69 +4,69 @@ const pool = require('./db');
 // All tables that SHOULD exist after master-seeder runs
 const EXPECTED_TABLES = [
     // Auth & Settings
-    { name: 'app_roles',                    critical: true,  desc: 'User roles (Admin, Teacher, etc.)' },
-    { name: 'role_permissions',             critical: true,  desc: 'Permissions per role' },
-    { name: 'app_users',                    critical: true,  desc: 'Login users' },
-    { name: 'school_settings',              critical: true,  desc: 'School name, logo, etc.' },
-    { name: 'system_settings',              critical: true,  desc: 'Backup & system config' },
+    { name: 'app_roles', critical: true, desc: 'User roles (Admin, Teacher, etc.)' },
+    { name: 'role_permissions', critical: true, desc: 'Permissions per role' },
+    { name: 'app_users', critical: true, desc: 'Login users' },
+    { name: 'school_settings', critical: true, desc: 'School name, logo, etc.' },
+    { name: 'system_settings', critical: true, desc: 'Backup & system config' },
     // Academic Structure
-    { name: 'classes',                      critical: true,  desc: 'Class list (KG, 1, 2...)' },
-    { name: 'sections',                     critical: true,  desc: 'Sections per class (A, B...)' },
-    { name: 'subjects',                     critical: true,  desc: 'Subject list' },
-    { name: 'academic_years',               critical: true,  desc: 'Academic years (2024-2025...)' },
-    { name: 'academic_terms',               critical: true,  desc: 'Terms per academic year' },
+    { name: 'classes', critical: true, desc: 'Class list (KG, 1, 2...)' },
+    { name: 'sections', critical: true, desc: 'Sections per class (A, B...)' },
+    { name: 'subjects', critical: true, desc: 'Subject list' },
+    { name: 'academic_years', critical: true, desc: 'Academic years (2024-2025...)' },
+    { name: 'academic_terms', critical: true, desc: 'Terms per academic year' },
     // Students
-    { name: 'students',                     critical: true,  desc: 'Student records' },
-    { name: 'student_academic_records',     critical: true,  desc: 'Student promotions/results' },
-    { name: 'families',                     critical: true,  desc: 'Family groupings' },
-    { name: 'student_siblings',             critical: true,  desc: 'Sibling relationships' },
+    { name: 'students', critical: true, desc: 'Student records' },
+    { name: 'student_academic_records', critical: true, desc: 'Student promotions/results' },
+    { name: 'families', critical: true, desc: 'Family groupings' },
+    { name: 'student_siblings', critical: true, desc: 'Sibling relationships' },
     // HRM / Employees
-    { name: 'departments',                  critical: true,  desc: 'HR departments' },
-    { name: 'employees',                    critical: true,  desc: 'Employee records' },
-    { name: 'teacher_subject_assignment',   critical: true,  desc: 'Which teacher teaches what' },
-    { name: 'teacher_class_assignment',     critical: true,  desc: 'Class teacher assignments' },
+    { name: 'departments', critical: true, desc: 'HR departments' },
+    { name: 'employees', critical: true, desc: 'Employee records' },
+    { name: 'teacher_subject_assignment', critical: true, desc: 'Which teacher teaches what' },
+    { name: 'teacher_class_assignment', critical: true, desc: 'Class teacher assignments' },
     // Attendance
-    { name: 'student_attendance',           critical: true,  desc: 'Student daily attendance' },
-    { name: 'staff_attendance',             critical: true,  desc: 'Staff daily attendance' },
+    { name: 'student_attendance', critical: true, desc: 'Student daily attendance' },
+    { name: 'staff_attendance', critical: true, desc: 'Staff daily attendance' },
     // Expenses
-    { name: 'expense_categories',           critical: true,  desc: 'Expense category list' },
-    { name: 'expenses',                     critical: true,  desc: 'Expense records' },
+    { name: 'expense_categories', critical: true, desc: 'Expense category list' },
+    { name: 'expenses', critical: true, desc: 'Expense records' },
     // Fees
-    { name: 'fee_heads',                    critical: true,  desc: 'Fee types (Tuition, Exam...)' },
-    { name: 'fee_plans',                    critical: true,  desc: 'Fee plan groups' },
-    { name: 'fee_plan_classes',             critical: true,  desc: 'Which classes are in which plan' },
-    { name: 'fee_plan_heads',               critical: true,  desc: 'Fee amounts per plan/head' },
-    { name: 'monthly_fee_slips',            critical: true,  desc: 'Generated monthly fee slips' },
-    { name: 'slip_line_items',              critical: true,  desc: 'Individual line items per slip' },
-    { name: 'fee_payments',                 critical: true,  desc: 'Fee payment records' },
-    { name: 'family_opb_payments',          critical: true,  desc: 'Opening balance payment ledger' },
-    { name: 'admission_fee_ledger',         critical: true,  desc: 'Admission fee outstanding' },
-    { name: 'admission_fee_payments',       critical: true,  desc: 'Admission fee payments' },
-    { name: 'exam_fee_collections',         critical: true,  desc: 'Exam fee collection records' },
+    { name: 'fee_heads', critical: true, desc: 'Fee types (Tuition, Exam...)' },
+    { name: 'fee_plans', critical: true, desc: 'Fee plan groups' },
+    { name: 'fee_plan_classes', critical: true, desc: 'Which classes are in which plan' },
+    { name: 'fee_plan_heads', critical: true, desc: 'Fee amounts per plan/head' },
+    { name: 'monthly_fee_slips', critical: true, desc: 'Generated monthly fee slips' },
+    { name: 'slip_line_items', critical: true, desc: 'Individual line items per slip' },
+    { name: 'fee_payments', critical: true, desc: 'Fee payment records' },
+    { name: 'family_opb_payments', critical: true, desc: 'Opening balance payment ledger' },
+    { name: 'admission_fee_ledger', critical: true, desc: 'Admission fee outstanding' },
+    { name: 'admission_fee_payments', critical: true, desc: 'Admission fee payments' },
+    { name: 'exam_fee_collections', critical: true, desc: 'Exam fee collection records' },
     // Examinations
-    { name: 'exam_marks',                   critical: false, desc: 'Exam marks per student' },
-    { name: 'exam_mark_locks',              critical: false, desc: 'Lock state for exam marks entry' },
-    { name: 'test_papers',                  critical: false, desc: 'Test papers definition' },
-    { name: 'test_marks',                   critical: false, desc: 'Test marks per student' },
-    { name: 'test_paper_locks',             critical: false, desc: 'Lock state for test marks' },
+    { name: 'exam_marks', critical: false, desc: 'Exam marks per student' },
+    { name: 'exam_mark_locks', critical: false, desc: 'Lock state for exam marks entry' },
+    { name: 'test_papers', critical: false, desc: 'Test papers definition' },
+    { name: 'test_marks', critical: false, desc: 'Test marks per student' },
+    { name: 'test_paper_locks', critical: false, desc: 'Lock state for test marks' },
 ];
 
 // Critical columns to verify on key tables
 const CRITICAL_COLUMNS = {
-    app_roles:            ['id', 'role_name', 'role_level', 'is_custom', 'is_system_default'],
-    app_users:            ['id', 'username', 'password_hash', 'role_id', 'is_active'],
-    students:             ['student_id', 'first_name', 'class_id', 'section_id'],
-    families:             ['family_id', 'family_fee', 'opening_balance', 'opening_balance_paid'],
-    monthly_fee_slips:    ['slip_id', 'is_printed', 'printed_at', 'is_family_slip', 'has_multi_months'],
-    fee_payments:         ['payment_id', 'slip_id', 'amount_paid', 'is_printed', 'printed_at'],
-    academic_years:       ['id', 'year_name', 'is_active', 'status'],
-    academic_terms:       ['id', 'academic_year_id', 'has_summer_work', 'has_winter_work'],
-    fee_plans:            ['plan_id', 'applies_to_all'],
-    expense_categories:   ['category_id', 'category_name', 'is_active'],
-    expenses:             ['expense_id', 'category_id', 'expense_title', 'amount'],
-    exam_marks:           ['mark_id', 'student_id', 'subject_id', 'term_id', 'total_marks', 'obtained_marks'],
-    test_papers:          ['paper_id', 'paper_name', 'class_id', 'total_marks'],
-    test_marks:           ['test_mark_id', 'paper_id', 'student_id', 'obtained_marks', 'is_absent'],
+    app_roles: ['id', 'role_name', 'role_level', 'is_custom', 'is_system_default'],
+    app_users: ['id', 'username', 'password_hash', 'role_id', 'is_active'],
+    students: ['student_id', 'first_name', 'class_id', 'section_id'],
+    families: ['family_id', 'family_fee', 'opening_balance', 'opening_balance_paid'],
+    monthly_fee_slips: ['slip_id', 'is_printed', 'printed_at', 'is_family_slip', 'has_multi_months'],
+    fee_payments: ['payment_id', 'slip_id', 'amount_paid', 'is_printed', 'printed_at'],
+    academic_years: ['id', 'year_name', 'is_active', 'status'],
+    academic_terms: ['id', 'academic_year_id', 'has_summer_work', 'has_winter_work'],
+    fee_plans: ['plan_id', 'applies_to_all'],
+    expense_categories: ['category_id', 'category_name', 'is_active'],
+    expenses: ['expense_id', 'category_id', 'expense_title', 'amount'],
+    exam_marks: ['mark_id', 'student_id', 'subject_id', 'term_id', 'total_marks', 'obtained_marks'],
+    test_papers: ['paper_id', 'paper_name', 'class_id', 'total_marks'],
+    test_marks: ['test_mark_id', 'paper_id', 'student_id', 'obtained_marks', 'is_absent'],
 };
 
 async function runFullCheck() {
@@ -217,7 +217,7 @@ async function runFullCheck() {
         console.log('\n══════════════════════════════════════════════════════');
         const criticalMissing = missing.filter(t => t.critical);
         if (criticalMissing.length === 0 && missing.length === 0) {
-            console.log('🎉 DATABASE STATUS: FULLY HEALTHY — All tables present!');
+            console.log('🎉 DATABASE STATUS: FULLY HEALTHY All tables present!');
         } else if (criticalMissing.length > 0) {
             console.log(`🚨 DATABASE STATUS: ${criticalMissing.length} CRITICAL TABLE(S) MISSING!`);
             console.log('   Run: node master-seeder.js to fix this.');

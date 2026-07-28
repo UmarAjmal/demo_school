@@ -269,7 +269,7 @@ export default function StudentAttendancePage() {
               <div className="card-header bg-white border-0 d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 px-md-4 py-3">
                 <span className="fw-bold" style={{ color: 'var(--primary-dark)' }}>
                   <i className="bi bi-people-fill me-2" style={{ color: 'var(--accent-orange)' }} />
-                  {total} Students — {cls?.class_name} {sec ? `(${sec.section_name})` : ''}
+                  {total} Students {cls?.class_name} {sec ? `(${sec.section_name})` : ''}
                 </span>
                 <span className="badge" style={{ background: 'rgba(33,94,97,0.1)', color: 'var(--primary-teal)', fontWeight: 600, fontSize: '0.78rem', padding: '5px 12px', borderRadius: 8 }}>
                   <i className="bi bi-calendar3 me-1" />{date ? fmtDate(date) : ''}
