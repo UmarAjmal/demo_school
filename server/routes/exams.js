@@ -2245,11 +2245,31 @@ router.post('/approvals/change-status', async (req, res) => {
                 [targetStatus, termId, classId, sectionId, subjectId]
             );
 
-            await client.query(
-                `INSERT INTO exam_sheet_approvals (sheet_type, term_id, class_id, section_id, subject_id, status, submitted_by_user_id, approved_by_user_id, approved_at, published_by_user_id, published_at)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7, CASE WHEN $6 = 'approved' THEN $7 ELSE NULL END, CASE WHEN $6 = 'approved' THEN NOW() ELSE NULL END, CASE WHEN $6 = 'published' THEN $7 ELSE NULL END, CASE WHEN $6 = 'published' THEN NOW() ELSE NULL END)`,
-                [sheetType, termId, classId, sectionId, subjectId, targetStatus, userId]
+            const checkRes = await client.query(
+                `SELECT approval_id FROM exam_sheet_approvals 
+                 WHERE sheet_type = 'term_exam' AND term_id = $1 AND class_id = $2 AND section_id = $3 AND subject_id = $4 LIMIT 1`,
+                [termId, classId, sectionId, subjectId]
             );
+
+            if (checkRes.rows.length > 0) {
+                await client.query(
+                    `UPDATE exam_sheet_approvals
+                     SET status = $1,
+                         approved_by_user_id = CASE WHEN $1 = 'approved' THEN $2 ELSE approved_by_user_id END,
+                         approved_at = CASE WHEN $1 = 'approved' THEN NOW() ELSE approved_at END,
+                         published_by_user_id = CASE WHEN $1 = 'published' THEN $2 ELSE published_by_user_id END,
+                         published_at = CASE WHEN $1 = 'published' THEN NOW() ELSE published_at END,
+                         updated_at = NOW()
+                     WHERE approval_id = $3`,
+                    [targetStatus, userId, checkRes.rows[0].approval_id]
+                );
+            } else {
+                await client.query(
+                    `INSERT INTO exam_sheet_approvals (sheet_type, term_id, class_id, section_id, subject_id, status, submitted_by_user_id, approved_by_user_id, approved_at, published_by_user_id, published_at)
+                     VALUES ('term_exam', $1, $2, $3, $4, $5, $6, CASE WHEN $5 = 'approved' THEN $6 ELSE NULL END, CASE WHEN $5 = 'approved' THEN NOW() ELSE NULL END, CASE WHEN $5 = 'published' THEN $6 ELSE NULL END, CASE WHEN $5 = 'published' THEN NOW() ELSE NULL END)`,
+                    [termId, classId, sectionId, subjectId, targetStatus, userId]
+                );
+            }
         } else if (sheetType === 'test_paper') {
             const testId = Number(req.body.test_id);
 
@@ -2258,12 +2278,32 @@ router.post('/approvals/change-status', async (req, res) => {
                 [targetStatus, testId]
             );
 
-            await client.query(
-                `INSERT INTO exam_sheet_approvals (sheet_type, test_id, class_id, section_id, status, submitted_by_user_id, approved_by_user_id, approved_at, published_by_user_id, published_at)
-                 SELECT 'test_paper', $1, class_id, section_id, $2, $3, CASE WHEN $2 = 'approved' THEN $3 ELSE NULL END, CASE WHEN $2 = 'approved' THEN NOW() ELSE NULL END, CASE WHEN $2 = 'published' THEN $3 ELSE NULL END, CASE WHEN $2 = 'published' THEN NOW() ELSE NULL END
-                 FROM test_papers WHERE (test_id = $1 OR paper_id = $1) LIMIT 1`,
-                [testId, targetStatus, userId]
+            const checkRes = await client.query(
+                `SELECT approval_id FROM exam_sheet_approvals 
+                 WHERE sheet_type = 'test_paper' AND test_id = $1 LIMIT 1`,
+                [testId]
             );
+
+            if (checkRes.rows.length > 0) {
+                await client.query(
+                    `UPDATE exam_sheet_approvals
+                     SET status = $1,
+                         approved_by_user_id = CASE WHEN $1 = 'approved' THEN $2 ELSE approved_by_user_id END,
+                         approved_at = CASE WHEN $1 = 'approved' THEN NOW() ELSE approved_at END,
+                         published_by_user_id = CASE WHEN $1 = 'published' THEN $2 ELSE published_by_user_id END,
+                         published_at = CASE WHEN $1 = 'published' THEN NOW() ELSE published_at END,
+                         updated_at = NOW()
+                     WHERE approval_id = $3`,
+                    [targetStatus, userId, checkRes.rows[0].approval_id]
+                );
+            } else {
+                await client.query(
+                    `INSERT INTO exam_sheet_approvals (sheet_type, test_id, class_id, section_id, status, submitted_by_user_id, approved_by_user_id, approved_at, published_by_user_id, published_at)
+                     SELECT 'test_paper', $1, class_id, section_id, $2, $3, CASE WHEN $2 = 'approved' THEN $3 ELSE NULL END, CASE WHEN $2 = 'approved' THEN NOW() ELSE NULL END, CASE WHEN $2 = 'published' THEN $3 ELSE NULL END, CASE WHEN $2 = 'published' THEN NOW() ELSE NULL END
+                     FROM test_papers WHERE (test_id = $1 OR paper_id = $1) LIMIT 1`,
+                    [testId, targetStatus, userId]
+                );
+            }
         }
 
         await client.query('COMMIT');
