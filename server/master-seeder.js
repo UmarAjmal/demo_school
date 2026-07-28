@@ -2045,10 +2045,10 @@ async function runMasterSeeder() {
         }
     })();
 
-    // ====== EXAM TABLES (exam_marks, exam_mark_locks, test_papers, test_marks, test_paper_locks) ======
+    // ====== EXAM & APPROVAL TABLES (exam_marks, exam_mark_locks, test_papers, test_marks, test_paper_locks, exam_sheet_approvals) ======
     await (async () => {
         try {
-            console.log('Creating examination tables...');
+            console.log('Creating examination & approval tables...');
             await pool.query(`
             CREATE TABLE IF NOT EXISTS exam_marks (
                 mark_id SERIAL PRIMARY KEY,
@@ -2060,6 +2060,7 @@ async function runMasterSeeder() {
                 section_id INTEGER NOT NULL REFERENCES sections(section_id) ON DELETE CASCADE,
                 total_marks NUMERIC(10,2) NOT NULL CHECK (total_marks > 0),
                 obtained_marks NUMERIC(10,2) NOT NULL CHECK (obtained_marks >= 0),
+                status VARCHAR(20) DEFAULT 'pending',
                 entered_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
                 entered_by_employee_id INTEGER REFERENCES employees(employee_id) ON DELETE SET NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -2082,41 +2083,65 @@ async function runMasterSeeder() {
         `);
             await pool.query(`
             CREATE TABLE IF NOT EXISTS test_papers (
-                paper_id SERIAL PRIMARY KEY,
-                paper_name VARCHAR(255) NOT NULL,
+                test_id SERIAL PRIMARY KEY,
+                test_name VARCHAR(200) NOT NULL,
+                description TEXT,
+                total_marks NUMERIC(10,2) NOT NULL CHECK (total_marks > 0),
                 class_id INTEGER NOT NULL REFERENCES classes(class_id) ON DELETE CASCADE,
-                section_id INTEGER REFERENCES sections(section_id) ON DELETE SET NULL,
-                academic_year_id INTEGER REFERENCES academic_years(id) ON DELETE SET NULL,
+                section_id INTEGER NOT NULL REFERENCES sections(section_id) ON DELETE CASCADE,
+                subject_id INTEGER NOT NULL REFERENCES subjects(subject_id) ON DELETE CASCADE,
+                status VARCHAR(20) DEFAULT 'pending',
                 created_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
-                total_marks NUMERIC(10,2) DEFAULT 100,
+                created_by_employee_id INTEGER REFERENCES employees(employee_id) ON DELETE SET NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
             await pool.query(`
             CREATE TABLE IF NOT EXISTS test_marks (
                 test_mark_id SERIAL PRIMARY KEY,
-                paper_id INTEGER NOT NULL REFERENCES test_papers(paper_id) ON DELETE CASCADE,
+                test_id INTEGER NOT NULL REFERENCES test_papers(test_id) ON DELETE CASCADE,
                 student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
                 obtained_marks NUMERIC(10,2),
                 is_absent BOOLEAN DEFAULT FALSE,
+                remarks VARCHAR(300),
                 entered_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(paper_id, student_id)
+                UNIQUE(test_id, student_id)
             );
         `);
             await pool.query(`
             CREATE TABLE IF NOT EXISTS test_paper_locks (
                 lock_id SERIAL PRIMARY KEY,
-                paper_id INTEGER NOT NULL REFERENCES test_papers(paper_id) ON DELETE CASCADE,
+                test_id INTEGER NOT NULL REFERENCES test_papers(test_id) ON DELETE CASCADE,
                 locked_by_user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
                 locked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(paper_id, locked_by_user_id)
+                UNIQUE(test_id, locked_by_user_id)
+            );
+        `);
+            await pool.query(`
+            CREATE TABLE IF NOT EXISTS exam_sheet_approvals (
+                approval_id SERIAL PRIMARY KEY,
+                sheet_type VARCHAR(20) NOT NULL,
+                term_id INTEGER REFERENCES academic_terms(id) ON DELETE CASCADE,
+                class_id INTEGER NOT NULL REFERENCES classes(class_id) ON DELETE CASCADE,
+                section_id INTEGER NOT NULL REFERENCES sections(section_id) ON DELETE CASCADE,
+                subject_id INTEGER REFERENCES subjects(subject_id) ON DELETE CASCADE,
+                test_id INTEGER,
+                status VARCHAR(20) DEFAULT 'pending',
+                submitted_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
+                approved_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
+                approved_at TIMESTAMP,
+                published_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
+                published_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
             await pool.query(`CREATE INDEX IF NOT EXISTS idx_exam_marks_term_subject ON exam_marks(term_id, subject_id);`);
             await pool.query(`CREATE INDEX IF NOT EXISTS idx_exam_marks_class_section ON exam_marks(class_id, section_id);`);
-            console.log('Examination tables created successfully!');
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_test_papers_class_sec_sub ON test_papers(class_id, section_id, subject_id);`);
+            console.log('Examination & approval tables created successfully!');
         } catch (err) {
             console.error('[Error creating exam tables]:', err.message);
         }
@@ -2129,7 +2154,8 @@ async function runMasterSeeder() {
             // app_roles: role_level + is_custom
             await pool.query(`ALTER TABLE app_roles ADD COLUMN IF NOT EXISTS role_level INT DEFAULT 50;`);
             await pool.query(`ALTER TABLE app_roles ADD COLUMN IF NOT EXISTS is_custom BOOLEAN DEFAULT TRUE;`);
-            // Seed role levels for standard roles (only if still at default 50)
+            
+            // Seed role levels for standard roles
             const roleLevels = [
                 ['Administrator', 100], ['Principal', 95], ['Vice Principal', 90],
                 ['Coordinator', 75], ['Primary Head', 65], ['Middle Head', 65], ['Matric Head', 65],
@@ -2141,9 +2167,30 @@ async function runMasterSeeder() {
                     [level, name]
                 );
             }
-            // fee_payments: is_printed + printed_at
+
+            // monthly_fee_slips & fee_payments
+            await pool.query(`ALTER TABLE monthly_fee_slips ADD COLUMN IF NOT EXISTS is_printed BOOLEAN DEFAULT FALSE;`);
+            await pool.query(`ALTER TABLE monthly_fee_slips ADD COLUMN IF NOT EXISTS printed_at TIMESTAMP;`);
             await pool.query(`ALTER TABLE fee_payments ADD COLUMN IF NOT EXISTS is_printed BOOLEAN DEFAULT FALSE;`);
             await pool.query(`ALTER TABLE fee_payments ADD COLUMN IF NOT EXISTS printed_at TIMESTAMP;`);
+
+            // academic_terms & fee_plans
+            await pool.query(`ALTER TABLE academic_terms ADD COLUMN IF NOT EXISTS has_summer_work BOOLEAN DEFAULT FALSE;`);
+            await pool.query(`ALTER TABLE academic_terms ADD COLUMN IF NOT EXISTS has_winter_work BOOLEAN DEFAULT FALSE;`);
+            await pool.query(`ALTER TABLE fee_plans ADD COLUMN IF NOT EXISTS applies_to_all BOOLEAN DEFAULT FALSE;`);
+            await pool.query(`ALTER TABLE school_settings ALTER COLUMN logo_url TYPE TEXT;`);
+
+            // subjects term_id & constraint
+            await pool.query(`ALTER TABLE subjects ADD COLUMN IF NOT EXISTS term_id INTEGER REFERENCES academic_terms(id) ON DELETE SET NULL;`);
+            await pool.query(`ALTER TABLE subjects DROP CONSTRAINT IF EXISTS subjects_section_id_subject_name_key;`);
+            await pool.query(`ALTER TABLE subjects DROP CONSTRAINT IF EXISTS subjects_section_term_subject_name_key;`);
+            await pool.query(`ALTER TABLE subjects ADD CONSTRAINT subjects_section_term_subject_name_key UNIQUE (section_id, subject_name, term_id);`);
+
+            // exam_marks & test_papers approval status
+            await pool.query(`ALTER TABLE exam_marks ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending';`);
+            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending';`);
+            await pool.query(`ALTER TABLE test_marks ADD COLUMN IF NOT EXISTS remarks VARCHAR(300);`);
+
             console.log('Missing column fixes applied successfully!');
         } catch (err) {
             console.error('[Error applying column fixes]:', err.message);

@@ -44,11 +44,12 @@ const EXPECTED_TABLES = [
     { name: 'admission_fee_payments', critical: true, desc: 'Admission fee payments' },
     { name: 'exam_fee_collections', critical: true, desc: 'Exam fee collection records' },
     // Examinations
-    { name: 'exam_marks', critical: false, desc: 'Exam marks per student' },
+    { name: 'exam_marks', critical: true, desc: 'Exam marks per student' },
     { name: 'exam_mark_locks', critical: false, desc: 'Lock state for exam marks entry' },
-    { name: 'test_papers', critical: false, desc: 'Test papers definition' },
-    { name: 'test_marks', critical: false, desc: 'Test marks per student' },
+    { name: 'test_papers', critical: true, desc: 'Test papers definition' },
+    { name: 'test_marks', critical: true, desc: 'Test marks per student' },
     { name: 'test_paper_locks', critical: false, desc: 'Lock state for test marks' },
+    { name: 'exam_sheet_approvals', critical: true, desc: 'Exam & test marks approval workflow' },
 ];
 
 // Critical columns to verify on key tables
@@ -61,12 +62,14 @@ const CRITICAL_COLUMNS = {
     fee_payments: ['payment_id', 'slip_id', 'amount_paid', 'is_printed', 'printed_at'],
     academic_years: ['id', 'year_name', 'is_active', 'status'],
     academic_terms: ['id', 'academic_year_id', 'has_summer_work', 'has_winter_work'],
+    subjects: ['subject_id', 'subject_name', 'section_id', 'term_id'],
     fee_plans: ['plan_id', 'applies_to_all'],
     expense_categories: ['category_id', 'category_name', 'is_active'],
     expenses: ['expense_id', 'category_id', 'expense_title', 'amount'],
-    exam_marks: ['mark_id', 'student_id', 'subject_id', 'term_id', 'total_marks', 'obtained_marks'],
-    test_papers: ['paper_id', 'paper_name', 'class_id', 'total_marks'],
-    test_marks: ['test_mark_id', 'paper_id', 'student_id', 'obtained_marks', 'is_absent'],
+    exam_marks: ['mark_id', 'student_id', 'subject_id', 'term_id', 'total_marks', 'obtained_marks', 'status'],
+    test_papers: ['test_id', 'test_name', 'class_id', 'section_id', 'subject_id', 'total_marks', 'status'],
+    test_marks: ['test_mark_id', 'test_id', 'student_id', 'obtained_marks', 'remarks'],
+    exam_sheet_approvals: ['approval_id', 'sheet_type', 'class_id', 'section_id', 'status'],
 };
 
 async function runFullCheck() {
