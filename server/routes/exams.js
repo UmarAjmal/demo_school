@@ -2232,6 +2232,9 @@ router.post('/approvals/change-status', async (req, res) => {
 
         await client.query('BEGIN');
 
+        const approvedBy = targetStatus === 'approved' ? userId : null;
+        const publishedBy = targetStatus === 'published' ? userId : null;
+
         if (sheetType === 'term_exam') {
             const termId    = Number(req.body.term_id);
             const classId   = Number(req.body.class_id);
@@ -2255,19 +2258,19 @@ router.post('/approvals/change-status', async (req, res) => {
                 await client.query(
                     `UPDATE exam_sheet_approvals
                      SET status = $1,
-                         approved_by_user_id = CASE WHEN $1 = 'approved' THEN $2 ELSE approved_by_user_id END,
+                         approved_by_user_id = COALESCE($2::int, approved_by_user_id),
                          approved_at = CASE WHEN $1 = 'approved' THEN NOW() ELSE approved_at END,
-                         published_by_user_id = CASE WHEN $1 = 'published' THEN $2 ELSE published_by_user_id END,
+                         published_by_user_id = COALESCE($3::int, published_by_user_id),
                          published_at = CASE WHEN $1 = 'published' THEN NOW() ELSE published_at END,
                          updated_at = NOW()
-                     WHERE approval_id = $3`,
-                    [targetStatus, userId, checkRes.rows[0].approval_id]
+                     WHERE approval_id = $4`,
+                    [targetStatus, approvedBy, publishedBy, checkRes.rows[0].approval_id]
                 );
             } else {
                 await client.query(
                     `INSERT INTO exam_sheet_approvals (sheet_type, term_id, class_id, section_id, subject_id, status, submitted_by_user_id, approved_by_user_id, approved_at, published_by_user_id, published_at)
-                     VALUES ('term_exam', $1, $2, $3, $4, $5, $6, CASE WHEN $5 = 'approved' THEN $6 ELSE NULL END, CASE WHEN $5 = 'approved' THEN NOW() ELSE NULL END, CASE WHEN $5 = 'published' THEN $6 ELSE NULL END, CASE WHEN $5 = 'published' THEN NOW() ELSE NULL END)`,
-                    [termId, classId, sectionId, subjectId, targetStatus, userId]
+                     VALUES ('term_exam', $1, $2, $3, $4, $5::text, $6, $7::int, CASE WHEN $5::text = 'approved' THEN NOW() ELSE NULL END, $8::int, CASE WHEN $5::text = 'published' THEN NOW() ELSE NULL END)`,
+                    [termId, classId, sectionId, subjectId, targetStatus, userId, approvedBy, publishedBy]
                 );
             }
         } else if (sheetType === 'test_paper') {
@@ -2288,20 +2291,20 @@ router.post('/approvals/change-status', async (req, res) => {
                 await client.query(
                     `UPDATE exam_sheet_approvals
                      SET status = $1,
-                         approved_by_user_id = CASE WHEN $1 = 'approved' THEN $2 ELSE approved_by_user_id END,
+                         approved_by_user_id = COALESCE($2::int, approved_by_user_id),
                          approved_at = CASE WHEN $1 = 'approved' THEN NOW() ELSE approved_at END,
-                         published_by_user_id = CASE WHEN $1 = 'published' THEN $2 ELSE published_by_user_id END,
+                         published_by_user_id = COALESCE($3::int, published_by_user_id),
                          published_at = CASE WHEN $1 = 'published' THEN NOW() ELSE published_at END,
                          updated_at = NOW()
-                     WHERE approval_id = $3`,
-                    [targetStatus, userId, checkRes.rows[0].approval_id]
+                     WHERE approval_id = $4`,
+                    [targetStatus, approvedBy, publishedBy, checkRes.rows[0].approval_id]
                 );
             } else {
                 await client.query(
                     `INSERT INTO exam_sheet_approvals (sheet_type, test_id, class_id, section_id, status, submitted_by_user_id, approved_by_user_id, approved_at, published_by_user_id, published_at)
-                     SELECT 'test_paper', $1, class_id, section_id, $2, $3, CASE WHEN $2 = 'approved' THEN $3 ELSE NULL END, CASE WHEN $2 = 'approved' THEN NOW() ELSE NULL END, CASE WHEN $2 = 'published' THEN $3 ELSE NULL END, CASE WHEN $2 = 'published' THEN NOW() ELSE NULL END
+                     SELECT 'test_paper', $1, class_id, section_id, $2::text, $3, $4::int, CASE WHEN $2::text = 'approved' THEN NOW() ELSE NULL END, $5::int, CASE WHEN $2::text = 'published' THEN NOW() ELSE NULL END
                      FROM test_papers WHERE (test_id = $1 OR paper_id = $1) LIMIT 1`,
-                    [testId, targetStatus, userId]
+                    [testId, targetStatus, userId, approvedBy, publishedBy]
                 );
             }
         }
