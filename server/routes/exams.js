@@ -473,7 +473,7 @@ router.get('/marking-sheet', async (req, res) => {
              FROM academic_terms t
              JOIN classes c ON c.class_id = $2
              JOIN sections sec ON sec.section_id = $3
-             JOIN subjects s ON s.subject_id = $4 AND s.section_id = sec.section_id
+             JOIN subjects s ON s.subject_id = $4
              WHERE t.id = $1`,
             [termId, classId, sectionId, subjectId]
         );
