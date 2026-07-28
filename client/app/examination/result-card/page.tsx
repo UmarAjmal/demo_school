@@ -373,6 +373,8 @@ export default function ResultCardPage() {
         } finally {
             setLoadingContext(false);
         }
+    };
+
     const loadStudents = async () => {
         if (!ready || !user?.id) return;
         setLoadingStudents(true);
