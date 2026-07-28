@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { notify } from '@/app/utils/notify';
 
@@ -32,8 +32,6 @@ type SheetData = {
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://demo-school-soxa.onrender.com";
 
-
-
 export default function TestMarkingPage() {
     const { user } = useAuth();
 
@@ -45,7 +43,7 @@ export default function TestMarkingPage() {
     const [sections, setSections] = useState<SectionItem[]>([]);
     const [subjects, setSubjects] = useState<SubjectItem[]>([]);
 
-    // ── filter selectors: Term -> Class -> Section -> Subject ─────────────────
+    // ── filter selectors ──────────────────────────────────────────────────────
     const [selTerm, setSelTerm] = useState('');
     const [selClass, setSelClass] = useState('');
     const [selSection, setSelSection] = useState('');
@@ -71,10 +69,6 @@ export default function TestMarkingPage() {
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
-    // ── messages ─────────────────────────────────────────────────────────────
-    const [msg, setMsg] = useState<{ type: 'success' | 'danger' | 'warning'; text: string } | null>(null);
-
-    // ── derived lists ─────────────────────────────────────────────────────────
     const filteredSections = useMemo(() =>
         selClass ? sections.filter(s => s.class_id === Number(selClass)) : [],
         [sections, selClass]
@@ -92,26 +86,29 @@ export default function TestMarkingPage() {
 
     const readyToList = !!(selClass && selSection && selSubject && user?.id);
 
-    // ── load context ──────────────────────────────────────────────────────────
     const loadContext = async () => {
         if (!user?.id) { setLoadingCtx(false); return; }
         setLoadingCtx(true);
-        setMsg(null);
         try {
             const r = await fetch(`${API}/exams/tests/context?user_id=${user.id}`);
             const d = await r.json();
-            if (!r.ok) throw new Error(d.error || 'Failed to load context');
-            setIsAdmin(!!d.is_admin);
-            setTerms(d.terms || []);
-            setClasses(d.classes || []);
-            setSections(d.sections || []);
-            setSubjects(d.subjects || []);
+            if (!r.ok) throw new Error(d.error || 'Failed to load test context');
 
-            if (d.terms && d.terms.length > 0) {
-                setSelTerm(prev => prev || String(d.terms[0].id));
-            }
+            setIsAdmin(!!d.is_admin);
+            const nextTerms = Array.isArray(d.terms) ? d.terms : [];
+            const nextClasses = Array.isArray(d.classes) ? d.classes : [];
+            const nextSections = Array.isArray(d.sections) ? d.sections : [];
+            const nextSubjects = Array.isArray(d.subjects) ? d.subjects : [];
+
+            setTerms(nextTerms);
+            setClasses(nextClasses);
+            setSections(nextSections);
+            setSubjects(nextSubjects);
+
+            setSelClass(prev => (prev && nextClasses.some((c: ClassItem) => String(c.class_id) === prev) ? prev : nextClasses[0] ? String(nextClasses[0].class_id) : ''));
+            setSelTerm(prev => (prev && nextTerms.some((t: TermItem) => String(t.id) === prev) ? prev : nextTerms[0] ? String(nextTerms[0].id) : ''));
         } catch (e: any) {
-            setMsg({ type: 'danger', text: e.message || 'Failed to load context' });
+            notify.error(e.message || 'Failed to load test context');
         } finally {
             setLoadingCtx(false);
         }
@@ -119,35 +116,43 @@ export default function TestMarkingPage() {
 
     useEffect(() => { loadContext(); }, [user?.id]);
 
-    // cascade resets
-    useEffect(() => { setSelSubject(''); setTests([]); setSelectedTest(null); setSheet(null); }, [selTerm]);
-    useEffect(() => { setSelSection(''); setSelSubject(''); setTests([]); setSelectedTest(null); setSheet(null); }, [selClass]);
-    useEffect(() => { setSelSubject(''); setTests([]); setSelectedTest(null); setSheet(null); }, [selSection]);
-    useEffect(() => { setTests([]); setSelectedTest(null); setSheet(null); }, [selSubject]);
+    useEffect(() => {
+        setSelSection(''); setSelSubject(''); setTests([]); setSelectedTest(null); setSheet(null);
+    }, [selClass]);
 
     useEffect(() => {
-        if (filteredSections.length === 1 && !selSection)
+        setSelSubject(''); setTests([]); setSelectedTest(null); setSheet(null);
+    }, [selTerm, selSection]);
+
+    useEffect(() => {
+        if (filteredSections.length === 1 && !selSection) {
             setSelSection(String(filteredSections[0].section_id));
-    }, [filteredSections]);
+        }
+    }, [filteredSections, selSection]);
 
     useEffect(() => {
-        if (filteredSubjects.length === 1 && !selSubject)
+        if (filteredSubjects.length === 1 && !selSubject) {
             setSelSubject(String(filteredSubjects[0].subject_id));
-    }, [filteredSubjects]);
+        }
+    }, [filteredSubjects, selSubject]);
 
-    // ── load tests list ────────────────────────────────────────────────────────
     const loadTests = async () => {
         if (!readyToList || !user?.id) return;
         setLoadingTests(true);
-        setMsg(null);
         try {
-            const p = new URLSearchParams({ user_id: String(user.id), class_id: selClass, section_id: selSection, subject_id: selSubject });
-            const r = await fetch(`${API}/exams/tests?${p}`);
+            const params = new URLSearchParams({
+                user_id: String(user.id),
+                class_id: selClass,
+                section_id: selSection,
+                subject_id: selSubject
+            });
+            const r = await fetch(`${API}/exams/tests?${params.toString()}`);
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Failed to load tests');
-            setTests(d.tests || []);
+            setTests(Array.isArray(d.tests) ? d.tests : []);
         } catch (e: any) {
-            setMsg({ type: 'danger', text: e.message || 'Failed to load tests' });
+            setTests([]);
+            notify.error(e.message || 'Failed to load tests');
         } finally {
             setLoadingTests(false);
         }
@@ -155,17 +160,15 @@ export default function TestMarkingPage() {
 
     useEffect(() => {
         if (readyToList) loadTests();
-    }, [selClass, selSection, selSubject, user?.id]);
+    }, [readyToList, selClass, selSection, selSubject]);
 
-    // ── create test ───────────────────────────────────────────────────────────
     const handleCreate = async () => {
-        if (!user?.id || !readyToList) return;
-        if (!formName.trim()) { notify.warning('Test name is required.'); setMsg({ type: 'warning', text: 'Test name is required.' }); return; }
+        if (!readyToList || !user?.id) return;
+        if (!formName.trim()) { notify.warning('Please enter test name'); return; }
         const total = Number(formTotal);
-        if (!Number.isFinite(total) || total <= 0) { notify.warning('Total marks must be greater than 0.'); setMsg({ type: 'warning', text: 'Total marks must be greater than 0.' }); return; }
+        if (!Number.isFinite(total) || total <= 0) { notify.warning('Please enter valid total marks'); return; }
 
         setCreating(true);
-        setMsg(null);
         try {
             const r = await fetch(`${API}/exams/tests`, {
                 method: 'POST',
@@ -183,43 +186,39 @@ export default function TestMarkingPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Failed to create test');
 
-            setFormName(''); setFormDesc(''); setFormTotal('');
-            setShowCreateForm(false);
-            notify.success('Test created. Select it below to enter marks.');
-            setMsg({ type: 'success', text: 'Test created. Select it below to enter marks.' });
+            notify.success('Test created successfully!');
+            setFormName(''); setFormDesc(''); setFormTotal(''); setShowCreateForm(false);
             await loadTests();
-            // auto-open newly created test
-            setSelectedTest(d.test_id);
+            if (d.test?.test_id) setSelectedTest(d.test.test_id);
         } catch (e: any) {
-            notify.error(e.message || 'Create failed');
-            setMsg({ type: 'danger', text: e.message || 'Create failed' });
+            notify.error(e.message || 'Failed to create test');
         } finally {
             setCreating(false);
         }
     };
 
-    // ── open marking sheet ─────────────────────────────────────────────────────
     const loadSheet = async (testId: number) => {
         if (!user?.id) return;
         setLoadingSheet(true);
-        setMsg(null);
         try {
             const r = await fetch(`${API}/exams/tests/${testId}/sheet?user_id=${user.id}`);
             const d = await r.json();
-            if (!r.ok) throw new Error(d.error || 'Failed to load sheet');
-            setSheet(d);
-            const om: Record<number, string> = {};
-            const rm: Record<number, string> = {};
-            for (const s of (d.students || [])) {
-                om[s.student_id] = s.obtained_marks !== null && s.obtained_marks !== undefined ? String(s.obtained_marks) : '';
-                rm[s.student_id] = s.remarks || '';
+            if (!r.ok) throw new Error(d.error || 'Failed to load marking sheet');
+
+            const sData = d as SheetData;
+            setSheet(sData);
+
+            const oMap: Record<number, string> = {};
+            const rMap: Record<number, string> = {};
+            for (const s of sData.students) {
+                oMap[s.student_id] = s.obtained_marks !== null && s.obtained_marks !== undefined ? String(s.obtained_marks) : '';
+                rMap[s.student_id] = s.remarks || '';
             }
-            setObtainedMap(om);
-            setRemarksMap(rm);
+            setObtainedMap(oMap);
+            setRemarksMap(rMap);
         } catch (e: any) {
             setSheet(null);
-            notify.error(e.message || 'Failed to load marks sheet');
-            setMsg({ type: 'danger', text: e.message || 'Failed to load marks sheet' });
+            notify.error(e.message || 'Failed to load marking sheet');
         } finally {
             setLoadingSheet(false);
         }
@@ -230,155 +229,136 @@ export default function TestMarkingPage() {
         else setSheet(null);
     }, [selectedTest]);
 
-    // ── save marks ─────────────────────────────────────────────────────────────
-    const handleSave = async () => {
-        if (!user?.id || !sheet) return;
-        const totalMarks = Number(sheet.test.total_marks);
-
-        for (const s of sheet.students) {
-            const val = obtainedMap[s.student_id];
-            if (val !== '' && val !== undefined) {
-                const n = Number(val);
-                if (!Number.isFinite(n) || n < 0 || n > totalMarks) {
-                    notify.warning(`Invalid marks for ${s.first_name} ${s.last_name}. Must be 0–${totalMarks}.`);
-                    setMsg({ type: 'danger', text: `Invalid marks for ${s.first_name} ${s.last_name}. Must be 0–${totalMarks}.` });
-                    return;
-                }
-            }
-        }
-
+    const handleSaveSheet = async () => {
+        if (!selectedTest || !user?.id || !sheet) return;
         setSaving(true);
-        setMsg(null);
         try {
-            const marks = sheet.students.map(s => ({
-                student_id: s.student_id,
-                obtained_marks: obtainedMap[s.student_id] !== '' ? obtainedMap[s.student_id] : null,
-                remarks: remarksMap[s.student_id] || null
-            }));
+            const marksPayload = sheet.students.map(s => {
+                const rawObt = obtainedMap[s.student_id];
+                const obt = rawObt === '' || rawObt === undefined || rawObt === null ? null : Number(rawObt);
+                const rem = (remarksMap[s.student_id] || '').trim();
+                return {
+                    student_id: s.student_id,
+                    obtained_marks: obt,
+                    remarks: rem || null
+                };
+            });
 
-            const r = await fetch(`${API}/exams/tests/${sheet.test.test_id}/save`, {
+            const r = await fetch(`${API}/exams/tests/${selectedTest}/save`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: user.id, marks })
+                body: JSON.stringify({
+                    user_id: user.id,
+                    marks: marksPayload
+                })
             });
             const d = await r.json();
-            if (!r.ok) throw new Error(d.error || 'Failed to save marks');
+            if (!r.ok) throw new Error(d.error || 'Failed to save test marks');
 
-            notify.success(d.message || 'Marks saved.');
-            setMsg({ type: 'success', text: d.message || 'Marks saved.' });
-            await loadSheet(sheet.test.test_id);
+            notify.success(d.message || 'Test marks saved successfully!');
+            await loadSheet(selectedTest);
             await loadTests();
         } catch (e: any) {
-            notify.error(e.message || 'Save failed');
-            setMsg({ type: 'danger', text: e.message || 'Save failed' });
+            notify.error(e.message || 'Failed to save test marks');
         } finally {
             setSaving(false);
         }
     };
 
-    // ── delete test (admin) ────────────────────────────────────────────────────
     const handleDeleteTest = async (testId: number) => {
         if (!user?.id) return;
-        if (!window.confirm('Delete this test and all its marks? This cannot be undone.')) return;
+        if (!window.confirm('Delete this test paper and all its entered marks?')) return;
         setDeleting(true);
-        setMsg(null);
         try {
             const r = await fetch(`${API}/exams/tests/${testId}?user_id=${user.id}`, { method: 'DELETE' });
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Delete failed');
-            if (selectedTest === testId) { setSelectedTest(null); setSheet(null); }
-            notify.success(d.message || 'Test deleted.');
-            setMsg({ type: 'success', text: d.message || 'Test deleted.' });
+
+            notify.success('Test deleted successfully');
+            if (selectedTest === testId) setSelectedTest(null);
             await loadTests();
         } catch (e: any) {
             notify.error(e.message || 'Delete failed');
-            setMsg({ type: 'danger', text: e.message || 'Delete failed' });
         } finally {
             setDeleting(false);
         }
     };
 
-    // ── helpers ───────────────────────────────────────────────────────────────
+    const handleFillZero = () => {
+        if (!sheet) return;
+        const filled: Record<number, string> = {};
+        for (const s of sheet.students) {
+            filled[s.student_id] = obtainedMap[s.student_id] !== '' && obtainedMap[s.student_id] !== undefined ? obtainedMap[s.student_id] : '0';
+        }
+        setObtainedMap(filled);
+        notify.success('Empty entries filled with 0');
+    };
+
     const fmtDate = (iso: string) => {
         try { return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
         catch { return iso; }
     };
 
-    if (!user) {
-        return (
-            <div className="container py-4">
-                <div className="alert alert-danger mb-0">You do not have permission to access Test Marking.</div>
-            </div>
-        );
-    }
-
     return (
-        <div className="page-wrap" style={{ backgroundColor: 'var(--bg-main)', minHeight: '100vh' }}>
-
-            {/* ── Page header ─────────────────────────────────────────────── */}
-            <div className="d-flex align-items-center justify-content-between mb-4">
+        <div className="page-wrap" style={{ backgroundColor: 'var(--bg-main)', minHeight: '100vh', paddingBottom: '3rem' }}>
+            
+            {/* Page Header */}
+            <div className="d-flex flex-wrap align-items-center justify-content-between mb-4">
                 <div>
                     <h4 className="mb-1 fw-bold" style={{ color: 'var(--primary-dark)' }}>
-                        <i className="bi bi-pencil-square me-2" style={{ color: 'var(--accent-orange)' }} />
-                        Test Marking
+                        <i className="bi bi-journal-check me-2" style={{ color: 'var(--accent-orange)' }} />
+                        Class Test Marking
                     </h4>
-                    <div className="text-muted small">Create tests and enter student marks</div>
+                    <div className="text-muted small">Create chapter tests, quizzes, and enter student test scores</div>
                 </div>
-                {isAdmin && <span className="badge rounded-pill bg-warning text-dark border"><i className="bi bi-shield-fill me-1" />Admin Mode</span>}
             </div>
 
-            {/* ── Alert ──────────────────────────────────────────────────── */}
-            {msg && (
-                <div className={`alert alert-${msg.type} alert-dismissible`} role="alert">
-                    {msg.text}
-                    <button type="button" className="btn-close" onClick={() => setMsg(null)} />
-                </div>
-            )}
-
-            {/* ── Filter Card ─────────────────────────────────────────────── */}
+            {/* Seamless Selection Filter (4 Columns) */}
             <div className="card border-0 shadow-sm mb-4">
-                <div className="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" style={{ borderLeft: '4px solid var(--primary-teal)' }}>
+                <div className="card-header bg-white border-bottom py-3" style={{ borderLeft: '4px solid var(--primary-dark)' }}>
                     <h6 className="mb-0 fw-bold" style={{ color: 'var(--primary-dark)' }}>
-                        <i className="bi bi-funnel-fill me-2" style={{ color: 'var(--primary-teal)' }} />
-                        Test Marking Filters (Term → Class → Section → Subject)
+                        <i className="bi bi-sliders me-2" style={{ color: 'var(--accent-orange)' }} />
+                        Select Class & Subject Target (Auto-loads Tests)
                     </h6>
-                    <small className="text-muted">Step-by-step selection flow</small>
                 </div>
-                <div className="card-body">
-                    <div className="row g-3 align-items-end">
-                        <div className="col-md-3">
-                            <label className="form-label fw-semibold">
-                                <span className="badge bg-dark me-1">1</span> Term
+                <div className="card-body p-4">
+                    <div className="row g-3">
+                        <div className="col-md-3 col-6">
+                            <label className="form-label fw-semibold text-dark small mb-1">
+                                <span className="badge bg-dark text-white me-1">1</span> Term
                             </label>
-                            <select className="form-select" value={selTerm} onChange={e => setSelTerm(e.target.value)} disabled={loadingCtx}>
-                                <option value="">Select Term</option>
+                            <select className="form-select form-select-md border-2" value={selTerm} onChange={e => setSelTerm(e.target.value)} disabled={loadingCtx}>
+                                <option value="">-- Choose Term --</option>
                                 {terms.map(t => <option key={t.id} value={t.id}>{t.term_name}</option>)}
                             </select>
                         </div>
-                        <div className="col-md-3">
-                            <label className="form-label fw-semibold">
-                                <span className="badge bg-dark me-1">2</span> Class
+
+                        <div className="col-md-3 col-6">
+                            <label className="form-label fw-semibold text-dark small mb-1">
+                                <span className="badge bg-dark text-white me-1">2</span> Class
                             </label>
-                            <select className="form-select" value={selClass} onChange={e => setSelClass(e.target.value)} disabled={loadingCtx}>
-                                <option value="">Select Class</option>
+                            <select className="form-select form-select-md border-2" value={selClass} onChange={e => setSelClass(e.target.value)} disabled={loadingCtx}>
+                                <option value="">-- Choose Class --</option>
                                 {classes.map(c => <option key={c.class_id} value={c.class_id}>{c.class_name}</option>)}
                             </select>
                         </div>
-                        <div className="col-md-3">
-                            <label className="form-label fw-semibold">
-                                <span className="badge bg-dark me-1">3</span> Section
+
+                        <div className="col-md-3 col-6">
+                            <label className="form-label fw-semibold text-dark small mb-1">
+                                <span className="badge bg-dark text-white me-1">3</span> Section
                             </label>
-                            <select className="form-select" value={selSection} onChange={e => setSelSection(e.target.value)} disabled={!selClass || loadingCtx}>
-                                <option value="">Select Section</option>
+                            <select className="form-select form-select-md border-2" value={selSection} onChange={e => setSelSection(e.target.value)} disabled={!selClass || loadingCtx}>
+                                <option value="">-- Choose Section --</option>
                                 {filteredSections.map(s => <option key={s.section_id} value={s.section_id}>{s.section_name}</option>)}
                             </select>
                         </div>
-                        <div className="col-md-3">
-                            <label className="form-label fw-semibold">
-                                <span className="badge bg-dark me-1">4</span> Subject
+
+                        <div className="col-md-3 col-6">
+                            <label className="form-label fw-semibold text-dark small mb-1">
+                                <span className="badge bg-dark text-white me-1">4</span> Subject
                             </label>
-                            <select className="form-select" value={selSubject} onChange={e => setSelSubject(e.target.value)} disabled={!selSection || loadingCtx}>
-                                <option value="">Select Subject</option>
+                            <select className="form-select form-select-md border-2" value={selSubject} onChange={e => setSelSubject(e.target.value)} disabled={!selSection || loadingCtx}>
+                                <option value="">-- Choose Subject --</option>
                                 {filteredSubjects.map(s => (
                                     <option key={s.subject_id} value={s.subject_id}>
                                         {s.subject_name}{s.subject_code ? ` (${s.subject_code})` : ''}
@@ -390,60 +370,61 @@ export default function TestMarkingPage() {
                 </div>
             </div>
 
-            {/* ── Tests List ─────────────────────────────────────────────── */}
+            {/* Test Papers List Card */}
             {readyToList && (
                 <div className="card border-0 shadow-sm mb-4">
-                    <div className="card-header bg-white d-flex justify-content-between align-items-center border-bottom" style={{ borderLeft: '4px solid var(--accent-orange)' }}>
-                        <h6 className="mb-0 fw-bold" style={{ color: 'var(--primary-dark)' }}>
-                            <i className="bi bi-list-check me-2" style={{ color: 'var(--accent-orange)' }} />
-                            Tests
+                    <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center"
+                        style={{ borderLeft: '4px solid var(--primary-teal)' }}>
+                        <h6 className="mb-0 fw-bold text-dark d-flex align-items-center">
+                            <i className="bi bi-file-earmark-text me-2 text-primary" />
+                            Tests & Quizzes
                             {!loadingTests && <span className="ms-2 badge bg-secondary rounded-pill">{tests.length}</span>}
                         </h6>
                         <button
-                            className="btn btn-sm btn-primary-custom fw-semibold"
-                            onClick={() => { setShowCreateForm(v => !v); setMsg(null); }}
+                            className="btn btn-sm btn-dark rounded-pill px-3 fw-bold"
+                            onClick={() => setShowCreateForm(v => !v)}
                         >
                             <i className={`bi ${showCreateForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`} />
-                            {showCreateForm ? 'Cancel' : 'New Test'}
+                            {showCreateForm ? 'Cancel' : 'New Class Test'}
                         </button>
                     </div>
 
-                    {/* ── Create Form ───────────────────────────────────── */}
+                    {/* Inline Create Form */}
                     {showCreateForm && (
-                        <div className="card-body border-bottom" style={{ background: 'var(--bg-soft, #f8f9fa)' }}>
+                        <div className="card-body border-bottom bg-light">
                             <div className="row g-3 align-items-end">
                                 <div className="col-md-4">
-                                    <label className="form-label fw-semibold">Test Name <span className="text-danger">*</span></label>
+                                    <label className="form-label fw-semibold small mb-1">Test Name <span className="text-danger">*</span></label>
                                     <input
-                                        type="text" className="form-control"
-                                        placeholder="e.g. Chapter 3 Quiz"
+                                        type="text" className="form-control form-control-sm border-2"
+                                        placeholder="e.g. Chapter 4 Quiz"
                                         value={formName} onChange={e => setFormName(e.target.value)}
                                         maxLength={200}
                                     />
                                 </div>
                                 <div className="col-md-4">
-                                    <label className="form-label fw-semibold">Description</label>
+                                    <label className="form-label fw-semibold small mb-1">Description</label>
                                     <input
-                                        type="text" className="form-control"
-                                        placeholder="Optional description"
+                                        type="text" className="form-control form-control-sm border-2"
+                                        placeholder="Optional test topics or notes"
                                         value={formDesc} onChange={e => setFormDesc(e.target.value)}
                                     />
                                 </div>
                                 <div className="col-md-2">
-                                    <label className="form-label fw-semibold">Total Marks <span className="text-danger">*</span></label>
+                                    <label className="form-label fw-semibold small mb-1">Total Marks <span className="text-danger">*</span></label>
                                     <input
-                                        type="text" inputMode="decimal" className="form-control"
-                                        placeholder="e.g. 50"
+                                        type="text" inputMode="decimal" className="form-control form-control-sm border-2 text-center fw-bold"
+                                        placeholder="50"
                                         value={formTotal} onChange={e => setFormTotal(e.target.value.replace(/[^0-9.]/g, ''))}
                                     />
                                 </div>
                                 <div className="col-md-2">
                                     <button
-                                        className="btn btn-success fw-semibold w-100"
+                                        className="btn btn-success btn-sm fw-bold w-100 rounded-pill"
                                         onClick={handleCreate}
                                         disabled={creating}
                                     >
-                                        {creating ? <><span className="spinner-border spinner-border-sm me-1" />Creating…</> : <><i className="bi bi-check2 me-1" />Create</>}
+                                        {creating ? <><span className="spinner-border spinner-border-sm me-1" />Creating...</> : <><i className="bi bi-check2 me-1" />Create Test</>}
                                     </button>
                                 </div>
                             </div>
@@ -453,67 +434,67 @@ export default function TestMarkingPage() {
                     <div className="card-body p-0">
                         {loadingTests ? (
                             <div className="text-center py-5 text-muted">
-                                <span className="spinner-border spinner-border-sm me-2" />Loading tests…
+                                <span className="spinner-border text-primary me-2" />Loading tests list...
                             </div>
                         ) : tests.length === 0 ? (
                             <div className="text-center py-5 text-muted">
-                                <i className="bi bi-inbox fs-2 d-block mb-2" />
-                                No tests found. Click <strong>New Test</strong> to create one.
+                                <i className="bi bi-inbox fs-1 d-block mb-2 text-secondary" />
+                                No tests created for this subject yet. Click <strong>New Class Test</strong> to add one.
                             </div>
                         ) : (
                             <div className="table-responsive">
-                                <table className="table table-hover mb-0 align-middle">
-                                    <thead className="table-light">
+                                <table className="table table-hover align-middle mb-0">
+                                    <thead className="table-dark">
                                         <tr>
-                                            <th>#</th>
+                                            <th style={{ width: 50 }} className="ps-4">#</th>
                                             <th>Test Name</th>
                                             <th>Description</th>
                                             <th className="text-center">Total Marks</th>
                                             <th className="text-center">Marks Entered</th>
                                             <th>Created By</th>
                                             <th>Date</th>
-                                            <th className="text-center">Action</th>
+                                            <th className="text-end pe-4">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {tests.map((t, idx) => (
                                             <tr
                                                 key={t.test_id}
-                                                style={{ cursor: 'pointer', background: selectedTest === t.test_id ? 'var(--primary-teal-soft, #e8f5f5)' : '' }}
+                                                style={{ cursor: 'pointer' }}
+                                                className={selectedTest === t.test_id ? 'table-light' : ''}
                                                 onClick={() => setSelectedTest(selectedTest === t.test_id ? null : t.test_id)}
                                             >
-                                                <td className="text-muted">{idx + 1}</td>
-                                                <td className="fw-semibold" style={{ color: 'var(--primary-teal)' }}>
+                                                <td className="ps-4 text-muted">{idx + 1}</td>
+                                                <td className="fw-bold text-dark">
                                                     {t.test_name}
-                                                    {selectedTest === t.test_id && <i className="bi bi-caret-right-fill ms-2 text-warning" />}
+                                                    {selectedTest === t.test_id && <span className="badge bg-primary ms-2">Active</span>}
                                                 </td>
                                                 <td className="text-muted small">{t.description || '—'}</td>
                                                 <td className="text-center">
-                                                    <span className="badge bg-primary rounded-pill">{t.total_marks}</span>
+                                                    <span className="badge bg-dark rounded-pill px-3">{t.total_marks}</span>
                                                 </td>
                                                 <td className="text-center">
                                                     <span className={`badge rounded-pill ${t.marks_entered > 0 ? 'bg-success' : 'bg-secondary'}`}>
-                                                        {t.marks_entered}
+                                                        {t.marks_entered} Students
                                                     </span>
                                                 </td>
-                                                <td className="small">{t.created_by_name}</td>
+                                                <td className="small fw-semibold">{t.created_by_name}</td>
                                                 <td className="small text-muted">{fmtDate(t.created_at)}</td>
-                                                <td className="text-center" onClick={e => e.stopPropagation()}>
+                                                <td className="text-end pe-4" onClick={e => e.stopPropagation()}>
                                                     <button
-                                                        className="btn btn-sm btn-outline-primary me-1"
-                                                        title="Open marks sheet"
+                                                        className="btn btn-sm btn-outline-primary rounded-pill me-1"
                                                         onClick={() => setSelectedTest(selectedTest === t.test_id ? null : t.test_id)}
                                                     >
-                                                        <i className="bi bi-pencil-fill" />
+                                                        <i className="bi bi-pencil-square me-1" />
+                                                        Mark Test
                                                     </button>
                                                     {isAdmin && (
                                                         <button
-                                                            className="btn btn-sm btn-outline-danger"
-                                                            title="Delete test"
+                                                            className="btn btn-sm btn-outline-danger rounded-pill"
                                                             onClick={() => handleDeleteTest(t.test_id)}
                                                             disabled={deleting}
                                                         >
-                                                            <i className="bi bi-trash-fill" />
+                                                            <i className="bi bi-trash" />
                                                         </button>
                                                     )}
                                                 </td>
@@ -527,159 +508,110 @@ export default function TestMarkingPage() {
                 </div>
             )}
 
-            {/* ── Marking Sheet ───────────────────────────────────────────── */}
+            {/* Test Marking Sheet Modal / Card */}
             {selectedTest !== null && (
                 <div className="card border-0 shadow-sm">
-                    <div className="card-header bg-white d-flex justify-content-between align-items-center border-bottom"
-                        style={{ borderLeft: '4px solid var(--primary-teal)' }}>
+                    <div className="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center"
+                        style={{ borderLeft: '4px solid #10b981' }}>
                         <div>
-                            <h6 className="mb-0 fw-bold" style={{ color: 'var(--primary-dark)' }}>
-                                <i className="bi bi-journal-check me-2" style={{ color: 'var(--primary-teal)' }} />
-                                Marks Sheet
-                                {sheet && <span className="ms-2 text-muted fw-normal small">— {sheet.test.test_name}</span>}
-                            </h6>
+                            <h5 className="mb-0 fw-bold text-dark">
+                                <i className="bi bi-pencil-square me-2 text-success" />
+                                Marking Test Sheet — {sheet?.test.test_name || 'Class Test'}
+                            </h5>
                             {sheet && (
-                                <div className="small text-muted mt-1">
-                                    {sheet.test.class_name} · {sheet.test.section_name} · {sheet.test.subject_name} &nbsp;|&nbsp;
-                                    Total Marks: <strong>{sheet.test.total_marks}</strong>
-                                    {sheet.readonly && <span className="ms-2 badge bg-danger">Locked</span>}
-                                    {isAdmin && <span className="ms-2 badge bg-warning text-dark">Admin — always editable</span>}
+                                <div className="text-muted extra-small mt-1">
+                                    {sheet.test.class_name} ({sheet.test.section_name}) · Subject: {sheet.test.subject_name} · Total Marks: <strong>{sheet.test.total_marks}</strong>
                                 </div>
                             )}
                         </div>
-                        <button className="btn btn-sm btn-outline-secondary" onClick={() => { setSelectedTest(null); setSheet(null); }}>
-                            <i className="bi bi-x-lg me-1" />Close
-                        </button>
+                        <div className="d-flex align-items-center gap-2">
+                            {sheet && !sheet.readonly && (
+                                <>
+                                    <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={handleFillZero}>
+                                        Fill 0s
+                                    </button>
+                                    <button className="btn btn-success fw-bold px-4 rounded-pill shadow-xs" onClick={handleSaveSheet} disabled={saving}>
+                                        {saving ? <><span className="spinner-border spinner-border-sm me-1" />Saving...</> : <><i className="bi bi-check-circle-fill me-1" />Save Test Marks</>}
+                                    </button>
+                                </>
+                            )}
+                            <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={() => { setSelectedTest(null); setSheet(null); }}>
+                                <i className="bi bi-x-lg me-1" />Close
+                            </button>
+                        </div>
                     </div>
 
                     <div className="card-body p-0">
                         {loadingSheet ? (
                             <div className="text-center py-5 text-muted">
-                                <span className="spinner-border spinner-border-sm me-2" />Loading students…
+                                <span className="spinner-border text-primary me-2" />Loading marking sheet...
                             </div>
                         ) : !sheet ? (
-                            <div className="text-center py-4 text-muted">Failed to load sheet.</div>
+                            <div className="text-center py-4 text-muted">Failed to load test sheet.</div>
                         ) : sheet.students.length === 0 ? (
-                            <div className="text-center py-5 text-muted">
-                                <i className="bi bi-people fs-2 d-block mb-2" />
-                                No active students found in this class/section.
-                            </div>
+                            <div className="text-center py-5 text-muted">No active students found in this class/section.</div>
                         ) : (
-                            <>
-                                <div className="table-responsive">
-                                    <table className="table table-hover mb-0 align-middle">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th style={{ width: 50 }}>#</th>
-                                                <th>Name</th>
-                                                <th>Adm. No</th>
-                                                <th>Roll No</th>
-                                                <th className="text-center" style={{ width: 130 }}>
-                                                    Obtained Marks
-                                                    <span className="text-muted fw-normal small"> /{sheet.test.total_marks}</span>
-                                                </th>
-                                                <th style={{ minWidth: 200 }}>Remarks</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {sheet.students.map((s, idx) => {
-                                                const isReadonly = sheet.readonly;
-                                                const obtained = obtainedMap[s.student_id] ?? '';
-                                                const remarks = remarksMap[s.student_id] ?? '';
-                                                const numVal = Number(obtained);
-                                                const isOver = obtained !== '' && Number.isFinite(numVal) && numVal > Number(sheet.test.total_marks);
-                                                const isNeg = obtained !== '' && Number.isFinite(numVal) && numVal < 0;
-                                                const isInvalid = isOver || isNeg;
+                            <div className="table-responsive">
+                                <table className="table table-hover align-middle mb-0">
+                                    <thead className="table-dark">
+                                        <tr>
+                                            <th style={{ width: 80 }} className="ps-4">Roll No</th>
+                                            <th style={{ width: 140 }}>Admission No</th>
+                                            <th>Student Name</th>
+                                            <th style={{ width: 180 }}>Obtained Marks</th>
+                                            <th>Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sheet.students.map((s) => {
+                                            const obtained = obtainedMap[s.student_id] ?? '';
+                                            const remarks = remarksMap[s.student_id] ?? '';
 
-                                                return (
-                                                    <tr key={s.student_id}>
-                                                        <td className="text-muted">{idx + 1}</td>
-                                                        <td className="fw-semibold">
-                                                            {s.first_name} {s.last_name}
-                                                        </td>
-                                                        <td className="text-muted small">{s.admission_no || '—'}</td>
-                                                        <td className="text-muted small">{s.roll_no || '—'}</td>
-                                                        <td className="text-center">
-                                                            {isReadonly ? (
-                                                                <span className="fw-semibold" style={{ color: 'var(--primary-teal)' }}>
-                                                                    {obtained !== '' ? obtained : <span className="text-muted">—</span>}
-                                                                </span>
-                                                            ) : (
-                                                                <input
-                                                                    type="text"
-                                                                    inputMode="decimal"
-                                                                    className={`form-control form-control-sm text-center${isInvalid ? ' is-invalid' : ''}`}
-                                                                    style={{ width: 100, margin: '0 auto' }}
-                                                                    value={obtained}
-                                                                    onChange={e => setObtainedMap(prev => ({ ...prev, [s.student_id]: e.target.value.replace(/[^0-9.]/g, '') }))}
-                                                                    placeholder="—"
-                                                                />
-                                                            )}
-                                                        </td>
-                                                        <td>
-                                                            {isReadonly ? (
-                                                                <span className="text-muted small">{remarks || '—'}</span>
-                                                            ) : (
-                                                                <input
-                                                                    type="text"
-                                                                    className="form-control form-control-sm"
-                                                                    maxLength={300}
-                                                                    value={remarks}
-                                                                    onChange={e => setRemarksMap(prev => ({ ...prev, [s.student_id]: e.target.value }))}
-                                                                    placeholder="Optional remark"
-                                                                />
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* ── Footer / Summary + Save ─────────────── */}
-                                <div className="card-footer bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
-                                    <div className="d-flex gap-3 small text-muted">
-                                        <span><strong>{sheet.students.length}</strong> students</span>
-                                        <span>
-                                            Entered: <strong>
-                                                {sheet.students.filter(s => obtainedMap[s.student_id] !== '').length}
-                                            </strong>
-                                        </span>
-                                        {(() => {
-                                            const nums = sheet.students
-                                                .map(s => Number(obtainedMap[s.student_id]))
-                                                .filter(n => Number.isFinite(n) && obtainedMap[sheet.students.find(x => x.student_id)?.student_id ?? -1] !== '');
-                                            const filled = sheet.students.filter(s => {
-                                                const v = obtainedMap[s.student_id];
-                                                return v !== '' && Number.isFinite(Number(v));
-                                            });
-                                            if (filled.length === 0) return null;
-                                            const avg = filled.reduce((a, s) => a + Number(obtainedMap[s.student_id]), 0) / filled.length;
-                                            return <span>Avg: <strong>{avg.toFixed(1)}</strong></span>;
-                                        })()}
-                                    </div>
-
-                                    {sheet.readonly ? (
-                                        <span className="badge bg-danger py-2 px-3">
-                                            <i className="bi bi-lock-fill me-1" />Locked — View Only
-                                        </span>
-                                    ) : (
-                                        <button
-                                            className="btn btn-primary-custom fw-bold px-4"
-                                            onClick={handleSave}
-                                            disabled={saving}
-                                        >
-                                            {saving
-                                                ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</>
-                                                : <><i className="bi bi-check2-circle me-2" />
-                                                    {isAdmin ? 'Save Marks' : 'Submit & Lock'}
-                                                </>
-                                            }
-                                        </button>
-                                    )}
-                                </div>
-                            </>
+                                            return (
+                                                <tr key={s.student_id}>
+                                                    <td className="ps-4 fw-bold text-dark">{s.roll_no || '—'}</td>
+                                                    <td className="text-muted small">{s.admission_no || '—'}</td>
+                                                    <td>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <div
+                                                                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                                                style={{ width: 32, height: 32, fontSize: '0.85rem' }}
+                                                            >
+                                                                {s.first_name[0]}{s.last_name[0] || ''}
+                                                            </div>
+                                                            <div className="fw-semibold text-dark">{s.first_name} {s.last_name}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="input-group input-group-sm">
+                                                            <input
+                                                                type="text"
+                                                                inputMode="decimal"
+                                                                className="form-control text-center fw-bold fs-6 border-2"
+                                                                placeholder="0.00"
+                                                                value={obtained}
+                                                                disabled={sheet.readonly || saving}
+                                                                onChange={(e) => setObtainedMap(prev => ({ ...prev, [s.student_id]: e.target.value.replace(/[^0-9.]/g, '') }))}
+                                                            />
+                                                            <span className="input-group-text text-muted extra-small">/ {sheet.test.total_marks}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            placeholder="Add remarks..."
+                                                            value={remarks}
+                                                            disabled={sheet.readonly || saving}
+                                                            onChange={(e) => setRemarksMap(prev => ({ ...prev, [s.student_id]: e.target.value }))}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -687,5 +619,3 @@ export default function TestMarkingPage() {
         </div>
     );
 }
-
-

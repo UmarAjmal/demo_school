@@ -178,7 +178,6 @@ export default function ExaminationMarksPage() {
                 map[s.student_id] = s.obtained_marks !== null && s.obtained_marks !== undefined ? String(s.obtained_marks) : '';
             }
             setObtainedMap(map);
-            notify.success(`Loaded ${list.length} students for marking.`);
         } catch (e: any) {
             setStudents([]);
             setObtainedMap({});
@@ -233,7 +232,7 @@ export default function ExaminationMarksPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Failed to save marks');
 
-            notify.success(d.message || 'Marks saved successfully & sent for approval review.');
+            notify.success(d.message || 'Marks saved & submitted for approval.');
             await loadSheet();
         } catch (e: any) {
             notify.error(e.message || 'Save failed');
@@ -259,7 +258,7 @@ export default function ExaminationMarksPage() {
             const d = await r.json();
             if (!r.ok) throw new Error(d.error || 'Delete failed');
 
-            notify.success(d.message || 'Marks deleted successfully.');
+            notify.success(d.message || 'Marks sheet deleted successfully.');
             await loadSheet();
         } catch (e: any) {
             notify.error(e.message || 'Delete failed');
@@ -274,7 +273,7 @@ export default function ExaminationMarksPage() {
         const cleared: Record<number, string> = {};
         for (const s of students) cleared[s.student_id] = '';
         setObtainedMap(cleared);
-        notify.info('All marks cleared on form.');
+        notify.warning('All marks cleared on form.');
     };
 
     const handleFillZero = () => {
@@ -283,7 +282,7 @@ export default function ExaminationMarksPage() {
             filled[s.student_id] = obtainedMap[s.student_id] !== '' && obtainedMap[s.student_id] !== undefined ? obtainedMap[s.student_id] : '0';
         }
         setObtainedMap(filled);
-        notify.info('Empty entries filled with 0.');
+        notify.success('Empty entries filled with 0.');
     };
 
     // ── Filtered Students Search ─────────────────────────────────────────────
@@ -336,38 +335,35 @@ export default function ExaminationMarksPage() {
                         Term Examination Marks Entry
                     </h4>
                     <div className="text-muted small">
-                        Enter subject marks step-by-step per term. Saved marks will enter approval workflow.
+                        Enter subject marks step-by-step per term. Saved marks automatically enter approval workflow.
                     </div>
                 </div>
 
                 <div className="d-flex align-items-center gap-2 mt-2 mt-md-0">
-                    <span className="badge rounded-pill bg-dark text-white px-3 py-2 border shadow-sm">
+                    <span className="badge rounded-pill bg-dark text-white px-3 py-2 border shadow-xs">
                         <i className="bi bi-calendar3 me-1" />
-                        Session: {activeYearName || 'Active Academic Year'}
+                        Session: {activeYearName || 'Active Year'}
                     </span>
-                    <span className="badge rounded-pill bg-primary text-white px-3 py-2 border shadow-sm">
+                    <span className="badge rounded-pill bg-primary text-white px-3 py-2 border shadow-xs">
                         <i className="bi bi-shield-lock me-1" />
-                        Approval Protection Active
+                        Approval Workflow Active
                     </span>
                 </div>
             </div>
 
-            {/* ── Step-by-Step Selection Card (4 Column Layout) ───────────── */}
+            {/* ── Seamless Selection Bar (4 Columns) ─────────────────────── */}
             <div className="card border-0 shadow-sm mb-4">
-                <div className="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" style={{ borderLeft: '4px solid #6366f1' }}>
+                <div className="card-header bg-white border-bottom py-3" style={{ borderLeft: '4px solid var(--primary-dark)' }}>
                     <h6 className="mb-0 fw-bold" style={{ color: 'var(--primary-dark)' }}>
-                        <i className="bi bi-sliders me-2" style={{ color: '#6366f1' }} />
-                        Step-by-Step Selection Flow
+                        <i className="bi bi-sliders me-2" style={{ color: 'var(--accent-orange)' }} />
+                        Select Marking Target (Auto-loads Students)
                     </h6>
-                    <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={loadContext} disabled={loadingContext}>
-                        <i className="bi bi-arrow-clockwise me-1" /> Refresh Lists
-                    </button>
                 </div>
                 <div className="card-body p-4">
                     <div className="row g-3">
                         <div className="col-md-3 col-6">
                             <label className="form-label fw-semibold text-dark small mb-1">
-                                <span className="badge bg-indigo text-white me-1">1</span> Select Term
+                                <span className="badge bg-dark text-white me-1">1</span> Term
                             </label>
                             <select
                                 className="form-select form-select-md border-2"
@@ -375,14 +371,14 @@ export default function ExaminationMarksPage() {
                                 onChange={(e) => setSelectedTerm(e.target.value)}
                                 disabled={loadingContext}
                             >
-                                <option value="">-- Choose Term --</option>
+                                <option value="">-- Select Term --</option>
                                 {terms.map(t => <option key={t.id} value={t.id}>{t.term_name}</option>)}
                             </select>
                         </div>
 
                         <div className="col-md-3 col-6">
                             <label className="form-label fw-semibold text-dark small mb-1">
-                                <span className="badge bg-indigo text-white me-1">2</span> Select Class
+                                <span className="badge bg-dark text-white me-1">2</span> Class
                             </label>
                             <select
                                 className="form-select form-select-md border-2"
@@ -390,14 +386,14 @@ export default function ExaminationMarksPage() {
                                 onChange={(e) => setSelectedClass(e.target.value)}
                                 disabled={loadingContext}
                             >
-                                <option value="">-- Choose Class --</option>
+                                <option value="">-- Select Class --</option>
                                 {classes.map(c => <option key={c.class_id} value={c.class_id}>{c.class_name}</option>)}
                             </select>
                         </div>
 
                         <div className="col-md-3 col-6">
                             <label className="form-label fw-semibold text-dark small mb-1">
-                                <span className="badge bg-indigo text-white me-1">3</span> Select Section
+                                <span className="badge bg-dark text-white me-1">3</span> Section
                             </label>
                             <select
                                 className="form-select form-select-md border-2"
@@ -405,14 +401,14 @@ export default function ExaminationMarksPage() {
                                 onChange={(e) => setSelectedSection(e.target.value)}
                                 disabled={!selectedClass || loadingContext}
                             >
-                                <option value="">-- Choose Section --</option>
+                                <option value="">-- Select Section --</option>
                                 {filteredSections.map(s => <option key={s.section_id} value={s.section_id}>{s.section_name}</option>)}
                             </select>
                         </div>
 
                         <div className="col-md-3 col-6">
                             <label className="form-label fw-semibold text-dark small mb-1">
-                                <span className="badge bg-indigo text-white me-1">4</span> Select Subject
+                                <span className="badge bg-dark text-white me-1">4</span> Subject
                             </label>
                             <select
                                 className="form-select form-select-md border-2"
@@ -420,7 +416,7 @@ export default function ExaminationMarksPage() {
                                 onChange={(e) => setSelectedSubject(e.target.value)}
                                 disabled={!selectedSection || loadingContext}
                             >
-                                <option value="">-- Choose Subject --</option>
+                                <option value="">-- Select Subject --</option>
                                 {filteredSubjects.map(s => (
                                     <option key={s.subject_id} value={s.subject_id}>
                                         {s.subject_name}{s.subject_code ? ` (${s.subject_code})` : ''}
@@ -443,7 +439,7 @@ export default function ExaminationMarksPage() {
                                 Marking Sheet — {students.length} Students
                             </h5>
                             <div className="text-muted extra-small">
-                                Fill student marks below. Unfilled entries will be saved as null (pending).
+                                Enter student marks below. Saved marks will enter approval workflow before publishing.
                             </div>
                         </div>
 
@@ -461,13 +457,13 @@ export default function ExaminationMarksPage() {
                                 />
                             </div>
 
-                            {/* Quick Actions */}
+                            {/* Quick Helpers */}
                             {!sheetReadonly && students.length > 0 && (
                                 <>
-                                    <button className="btn btn-sm btn-outline-secondary" onClick={handleFillZero} title="Fill empty rows with 0">
+                                    <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={handleFillZero} title="Fill empty rows with 0">
                                         Fill 0s
                                     </button>
-                                    <button className="btn btn-sm btn-outline-danger" onClick={handleClearAll} title="Clear form entries">
+                                    <button className="btn btn-sm btn-outline-danger rounded-pill" onClick={handleClearAll} title="Clear form entries">
                                         Clear
                                     </button>
                                 </>
@@ -476,7 +472,7 @@ export default function ExaminationMarksPage() {
                             {/* Save Marks Button */}
                             {!sheetReadonly && hasPermission('academic', 'write') && (
                                 <button
-                                    className="btn btn-success fw-bold px-4 rounded-pill shadow-sm"
+                                    className="btn btn-success fw-bold px-4 rounded-pill shadow-xs"
                                     onClick={handleSave}
                                     disabled={saving || loadingSheet || students.length === 0}
                                 >
