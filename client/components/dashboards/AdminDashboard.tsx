@@ -137,7 +137,7 @@ export default function AdminDashboard({ userName }: { userName: string }) {
           <DailyFeeReceipts />
           {/* Fee Area Chart */}
           <div style={{ marginBottom: 20 }}>
-            <Panel title="Daily Fee Collection  ” Last 14 Days" icon="bi-graph-up-arrow"
+            <Panel title="Daily Fee Collection    Last 14 Days" icon="bi-graph-up-arrow"
               action={<span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>{<MaskedAmount amount={s.this_month_collected} />} this month</span>}>
               {data!.fee_chart.length === 0 ? <EmptyChart /> : (
                 <ResponsiveContainer width="100%" height={240}>
@@ -164,7 +164,7 @@ export default function AdminDashboard({ userName }: { userName: string }) {
 
           {/* Attendance Bar Chart */}
           <div style={{ marginBottom: 20 }}>
-            <Panel title="Attendance Trend  ” Last 14 Days" icon="bi-person-check-fill"
+            <Panel title="Attendance Trend    Last 14 Days" icon="bi-person-check-fill"
               action={
                 <div style={{ display: 'flex', gap: 6 }}>
                   {(['students', 'staff'] as const).map(t => (
