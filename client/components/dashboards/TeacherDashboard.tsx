@@ -122,7 +122,7 @@ export default function TeacherDashboard({ userId }: { userId: number }) {
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                     >
                       <td style={{ padding: '12px 16px', fontWeight: 700, color: '#1a2e3b' }}>{r.class_name}</td>
-                      <td style={{ padding: '12px 16px', color: '#475569' }}>{r.section_name || 'â€”'}</td>
+                      <td style={{ padding: '12px 16px', color: '#475569' }}>{r.section_name || ''}</td>
                       <td style={{ padding: '12px 16px', color: '#475569', fontWeight: 600 }}>{r.total}</td>
                       <td style={{ padding: '12px 16px' }}>
                         <span style={{ fontWeight: 700, color: '#16a34a', background: '#16a34a1a', padding: '3px 10px', borderRadius: 20, fontSize: 12 }}>{r.present}</span>
@@ -233,7 +233,7 @@ export default function TeacherDashboard({ userId }: { userId: number }) {
                 >
                   <td style={{ padding: '11px 16px', color: '#475569' }}>{new Date(r.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
                   <td style={{ padding: '11px 16px', fontWeight: 700, color: '#1a2e3b' }}>{r.class_name}</td>
-                  <td style={{ padding: '11px 16px', color: '#475569' }}>{r.section_name || 'â€”'}</td>
+                  <td style={{ padding: '11px 16px', color: '#475569' }}>{r.section_name ||  }</td>
                   <td style={{ padding: '11px 16px', color: '#475569' }}>{r.total}</td>
                   <td style={{ padding: '11px 16px' }}><span style={{ fontWeight: 700, color: '#16a34a' }}>{r.present}</span></td>
                   <td style={{ padding: '11px 16px' }}><span style={{ fontWeight: 700, color: '#dc2626' }}>{r.absent}</span></td>

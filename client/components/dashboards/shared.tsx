@@ -17,16 +17,16 @@ export function QuickActionsDropdown() {
   }, []);
 
   const items = [
-    { href: '/students/admission',  label: 'New Admission',   sub: 'Register a new student',     icon: 'bi-person-plus-fill',     color: '#FE7F2D' },
-    { href: '/fees/collect',        label: 'Collect Fee',      sub: 'Receive student fee payment',icon: 'bi-cash-coin',            color: '#10b981' },
-    { href: '/fees/generate',       label: 'Generate Slips',   sub: 'Issue monthly fee vouchers', icon: 'bi-file-earmark-text-fill',color: '#6366f1' },
-    { href: '/attendance/students', label: 'Take Attendance', sub: 'Mark student attendance',    icon: 'bi-calendar-check-fill',  color: '#06b6d4' },
-    { href: '/academic/classes',    label: 'Manage Classes',  sub: 'Classes & sections setup',   icon: 'bi-building',             color: '#8b5cf6' },
-    { href: '/hrm/employees',       label: 'Employees / Staff',sub: 'Manage staff & teachers',   icon: 'bi-person-badge-fill',    color: '#ec4899' },
-    { href: '/examination/marks',   label: 'Exam Marks',       sub: 'Record student exam marks',  icon: 'bi-journal-check',        color: '#14b8a6' },
-    { href: '/reports/students',    label: 'Reports',          sub: 'Financial & academic data',  icon: 'bi-bar-chart-fill',       color: '#f59e0b' },
-    { href: '/expenses/add',        label: 'Add Expense',      sub: 'Record operational expense', icon: 'bi-wallet2',              color: '#ef4444' },
-    { href: '/settings/general',    label: 'School Settings',  sub: 'School info & logo setup',   icon: 'bi-gear-fill',            color: '#64748b' },
+    { href: '/students/admission', label: 'New Admission', sub: 'Register a new student', icon: 'bi-person-plus-fill', color: '#FE7F2D' },
+    { href: '/fees/collect', label: 'Collect Fee', sub: 'Receive student fee payment', icon: 'bi-cash-coin', color: '#10b981' },
+    { href: '/fees/generate', label: 'Generate Slips', sub: 'Issue monthly fee vouchers', icon: 'bi-file-earmark-text-fill', color: '#6366f1' },
+    { href: '/attendance/students', label: 'Take Attendance', sub: 'Mark student attendance', icon: 'bi-calendar-check-fill', color: '#06b6d4' },
+    { href: '/academic/classes', label: 'Manage Classes', sub: 'Classes & sections setup', icon: 'bi-building', color: '#8b5cf6' },
+    { href: '/hrm/employees', label: 'Employees / Staff', sub: 'Manage staff & teachers', icon: 'bi-person-badge-fill', color: '#ec4899' },
+    { href: '/examination/marks', label: 'Exam Marks', sub: 'Record student exam marks', icon: 'bi-journal-check', color: '#14b8a6' },
+    { href: '/reports/students', label: 'Reports', sub: 'Financial & academic data', icon: 'bi-bar-chart-fill', color: '#f59e0b' },
+    { href: '/expenses/add', label: 'Add Expense', sub: 'Record operational expense', icon: 'bi-wallet2', color: '#ef4444' },
+    { href: '/settings/general', label: 'School Settings', sub: 'School info & logo setup', icon: 'bi-gear-fill', color: '#64748b' },
   ];
 
   return (
@@ -145,7 +145,7 @@ export function DashShell({
           setLogoUrl(src);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   return (
@@ -168,7 +168,7 @@ export function DashShell({
         </div>
 
         <div className="dash-hero-container" style={{ position: 'relative' as const, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 16 }}>
-          
+
           {/* Left Side: Standard Logo Avatar + Title + Subtitle */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0, flex: 1 }}>
             <div className="dash-header-logo-avatar" title="School Logo">
@@ -680,7 +680,7 @@ export function RecentPaymentsTable({ rows }: { rows: any[] }) {
                   </div>
                 </div>
               </td>
-              <td style={{ padding: '11px 14px', color: '#475569' }}>{p.class_name || 'â€”'}</td>
+              <td style={{ padding: '11px 14px', color: '#475569' }}>{p.class_name ||  }</td>
               <td style={{ padding: '11px 14px', color: '#475569' }}>{MONTHS[(p.month || 1) - 1]} {p.year}</td>
               <td style={{ padding: '11px 14px' }}>
                 <span style={{ fontWeight: 800, color: '#16a34a' }}><MaskedAmount amount={p.amount_paid} /></span>
