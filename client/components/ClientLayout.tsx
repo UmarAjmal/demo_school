@@ -180,9 +180,10 @@ type SidebarProps = {
   isLoggedIn: boolean;
   logout: () => void;
   hasPermission: (key: string) => boolean;
+  schoolSettings: { school_name: string; logo_url: string; tagline: string };
 };
 
-const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasPermission }: SidebarProps) {
+const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasPermission, schoolSettings }: SidebarProps) {
   // pathname lives HERE not passed as prop so parent re-renders never break memo
   const pathname = usePathname() || '/';
 
@@ -221,20 +222,6 @@ const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasP
     });
     return g?.key ?? null;
   });
-  const [schoolSettings, setSchoolSettings] = useState<{ school_name: string; logo_url: string; tagline: string }>({
-    school_name: 'Smart School',
-    logo_url: '',
-    tagline: 'School Management System'
-  });
-  const [showSplash, setShowSplash] = useState(true);
-  const [splashFading, setSplashFading] = useState(false);
-
-  // Splash screen timer (2.3 seconds)
-  useEffect(() => {
-    const timer1 = setTimeout(() => setSplashFading(true), 2100);
-    const timer2 = setTimeout(() => setShowSplash(false), 2600);
-    return () => { clearTimeout(timer1); clearTimeout(timer2); };
-  }, []);
 
   // Responsive
   useEffect(() => {
@@ -247,45 +234,6 @@ const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasP
     window.addEventListener('resize', handle);
     return () => window.removeEventListener('resize', handle);
   }, []);
-
-  // Fetch school settings & update favicon / document title
-  useEffect(() => {
-    if (!isLoggedIn) return;
-    fetch(`${API}/settings`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d && typeof d === 'object') {
-          const name = d.school_name || 'Smart School';
-          const logo = d.logo_url ? (
-            d.logo_url.startsWith('data:') || d.logo_url.startsWith('http')
-              ? d.logo_url
-              : `${API}${d.logo_url}`
-          ) : '';
-          const tag = d.tagline || 'School Management System';
-
-          setSchoolSettings({
-            school_name: name,
-            logo_url: logo,
-            tagline: tag
-          });
-
-          // Update Document Title
-          document.title = `${name} | School Management`;
-
-          // Dynamic Favicon link
-          if (logo) {
-            let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
-            if (!link) {
-              link = document.createElement('link');
-              link.rel = 'shortcut icon';
-              document.getElementsByTagName('head')[0].appendChild(link);
-            }
-            link.href = logo;
-          }
-        }
-      })
-      .catch(() => { });
-  }, [isLoggedIn]);
 
   // Stable refs so inline-arrow callbacks in JSX don't break memo
   const logoutRef = useRef(logout); logoutRef.current = logout;
@@ -348,27 +296,6 @@ const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasP
 
   return (
     <>
-      {/* ══════ APP SPLASH SCREEN (2-3 SECONDS) ══════ */}
-      {showSplash && (
-        <div className={`app-splash-screen ${splashFading ? 'splash-fade-out' : ''}`}>
-          <div className="splash-card">
-            <div className="splash-logo-box">
-              {schoolSettings.logo_url ? (
-                <img src={schoolSettings.logo_url} alt={schoolSettings.school_name} className="splash-logo-img" />
-              ) : (
-                <span className="splash-logo-emoji">🏫</span>
-              )}
-            </div>
-            <h1 className="splash-title">{schoolSettings.school_name}</h1>
-            <p className="splash-subtitle">{schoolSettings.tagline || 'School Management System'}</p>
-
-            <div className="splash-loading-bar">
-              <div className="splash-loading-progress" />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Navigation loading overlay */}
       {(navLoading || navDone) && (
         <div className={`nav-overlay${navDone ? ' nav-overlay-out' : ''}`}>
@@ -519,10 +446,85 @@ function AuthRedirect() {
 // Main Layout never re-renders on navigation; only re-renders on login/logout
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  // NO usePathname() here that's in AuthRedirect.
-  // useAuth() value is memoized → this component only re-renders when
-  // user/isLoading changes (login / logout events only).
   const { user, isLoggedIn, isLoading, logout, hasPermission } = useAuth();
+
+  const [schoolSettings, setSchoolSettings] = useState<{ school_name: string; logo_url: string; tagline: string }>({
+    school_name: 'Smart School',
+    logo_url: '',
+    tagline: 'School Management System'
+  });
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashFading, setSplashFading] = useState(false);
+
+  // Splash screen timer (2.3 seconds)
+  useEffect(() => {
+    const timer1 = setTimeout(() => setSplashFading(true), 2100);
+    const timer2 = setTimeout(() => setShowSplash(false), 2600);
+    return () => { clearTimeout(timer1); clearTimeout(timer2); };
+  }, []);
+
+  // Fetch school settings unconditionally on mount (BEFORE login & AFTER login)
+  useEffect(() => {
+    fetch(`${API}/settings`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d && typeof d === 'object') {
+          const name = d.school_name || 'Smart School';
+          const logo = d.logo_url ? (
+            d.logo_url.startsWith('data:') || d.logo_url.startsWith('http')
+              ? d.logo_url
+              : `${API}${d.logo_url}`
+          ) : '';
+          const tag = d.tagline || 'School Management System';
+
+          setSchoolSettings({
+            school_name: name,
+            logo_url: logo,
+            tagline: tag
+          });
+
+          // Update Document Title
+          document.title = `${name} | School Management`;
+
+          // Dynamic Favicon link
+          if (logo) {
+            let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+            if (!link) {
+              link = document.createElement('link');
+              link.rel = 'shortcut icon';
+              document.getElementsByTagName('head')[0].appendChild(link);
+            }
+            link.href = logo;
+
+            let appleLink: HTMLLinkElement | null = document.querySelector("link[rel='apple-touch-icon']");
+            if (!appleLink) {
+              appleLink = document.createElement('link');
+              appleLink.rel = 'apple-touch-icon';
+              document.getElementsByTagName('head')[0].appendChild(appleLink);
+            }
+            appleLink.href = logo;
+          }
+
+          // Dynamic Meta Application Name
+          let appMeta = document.querySelector("meta[name='application-name']");
+          if (!appMeta) {
+            appMeta = document.createElement('meta');
+            appMeta.setAttribute('name', 'application-name');
+            document.head.appendChild(appMeta);
+          }
+          appMeta.setAttribute('content', name);
+
+          let appleMeta = document.querySelector("meta[name='apple-mobile-web-app-title']");
+          if (!appleMeta) {
+            appleMeta = document.createElement('meta');
+            appleMeta.setAttribute('name', 'apple-mobile-web-app-title');
+            document.head.appendChild(appleMeta);
+          }
+          appleMeta.setAttribute('content', name);
+        }
+      })
+      .catch(() => { });
+  }, []);
 
   // Initialize auto backup downloader
   useAutoBackup(isLoggedIn);
@@ -533,32 +535,58 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     import('bootstrap/dist/js/bootstrap.bundle.min.js').catch(() => { });
   }, []);
 
+  // Root Splash Screen Element (renders ON TOP OF EVERYTHING on initial load)
+  const splashElement = showSplash ? (
+    <div className={`app-splash-screen ${splashFading ? 'splash-fade-out' : ''}`}>
+      <div className="splash-card">
+        <div className="splash-logo-box">
+          {schoolSettings.logo_url ? (
+            <img src={schoolSettings.logo_url} alt={schoolSettings.school_name} className="splash-logo-img" />
+          ) : (
+            <span className="splash-logo-emoji">🏫</span>
+          )}
+        </div>
+        <h1 className="splash-title">{schoolSettings.school_name}</h1>
+        <p className="splash-subtitle">{schoolSettings.tagline || 'School Management System'}</p>
+
+        <div className="splash-loading-bar">
+          <div className="splash-loading-progress" />
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   // Auth still resolving
   if (isLoading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1e3545' }}>
-      <div className="spinner-border text-light" role="status"><span className="visually-hidden">Loading…</span></div>
-    </div>
+    <>
+      {splashElement}
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1e3545' }}>
+        <div className="spinner-border text-light" role="status"><span className="visually-hidden">Loading…</span></div>
+      </div>
+    </>
   );
 
-  // Not logged in: render children as-is (login page) + AuthRedirect handles
-  // redirecting any protected URLs back to /login
+  // Not logged in: render children as-is (login page) + Splash Screen BEFORE login!
   if (!isLoggedIn) return (
     <>
+      {splashElement}
       <AuthRedirect />
       {children}
       <ToastContainer position="top-right" autoClose={3000} theme="light" />
     </>
   );
 
-  // Authenticated full layout, AuthRedirect still mounted (handles logout redirect)
+  // Authenticated full layout
   return (
     <div className="sl-layout">
+      {splashElement}
       <AuthRedirect />
       <SidebarInner
         user={user}
         isLoggedIn={isLoggedIn}
         logout={logout}
         hasPermission={hasPermission}
+        schoolSettings={schoolSettings}
       />
       <main className="sl-main">{children}</main>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick pauseOnFocusLoss draggable pauseOnHover theme="light" />

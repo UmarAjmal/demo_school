@@ -167,7 +167,7 @@ export function DashShell({
           <div style={{ position: 'absolute' as const, bottom: -60, right: 140, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' as const }} />
         </div>
 
-        <div style={{ position: 'relative' as const, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 16 }}>
+        <div className="dash-hero-container" style={{ position: 'relative' as const, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 16 }}>
           
           {/* Left Side: Standard Logo Avatar + Title + Subtitle */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0, flex: 1 }}>
@@ -190,7 +190,7 @@ export function DashShell({
           </div>
 
           {/* Right Side: Quick Actions Dropdown */}
-          <div style={{ flexShrink: 0 }}>
+          <div className="dash-actions-wrapper" style={{ flexShrink: 0 }}>
             {actions || <QuickActionsDropdown />}
           </div>
         </div>

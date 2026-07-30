@@ -650,11 +650,28 @@ html, body { overflow-x: hidden; }
 .dash-side-grid-left  { grid-template-columns: 300px 1fr; }
 .dash-side-grid-right { grid-template-columns: 1fr 420px; }
 
-/* ══════════════════════  BREAKPOINT ≤ 991px (md, tablet)  ══════════════ */
 @media (max-width: 991px) {
   /* Reduce DashShell padding slightly on tablets */
-  .dash-hero  { padding: 24px 24px 72px !important; }
-  .dash-content { padding-left: 16px !important; padding-right: 16px !important; }
+  .dash-hero  { padding: 18px 18px !important; }
+  .dash-content { padding-left: 14px !important; padding-right: 14px !important; }
+}
+
+@media (max-width: 640px) {
+  .dash-hero-container {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+  .dash-actions-wrapper {
+    width: 100% !important;
+  }
+  .dash-actions-wrapper > div {
+    width: 100% !important;
+  }
+  .dash-actions-wrapper button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
 }
 
 /* ══════════════════════  BREAKPOINT ≤ 768px (mobile)  ══════════════════ */
