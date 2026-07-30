@@ -198,7 +198,7 @@ export default function AdminDashboard({ userName }: { userName: string }) {
       )}
 
       {/* Quick Actions */}
-      <Panel title="Quick Actions" icon="bi-lightning-charge-fill">
+      {/* <Panel title="Quick Actions" icon="bi-lightning-charge-fill">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: '4px 0' }}>
           {[
             { href: '/students/admission', icon: 'bi-person-plus-fill', label: 'New Admission', bg: C.teal },
@@ -233,7 +233,7 @@ export default function AdminDashboard({ userName }: { userName: string }) {
             </Link>
           ))}
         </div>
-      </Panel>
+      </Panel> */}
     </DashShell>
   );
 }

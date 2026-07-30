@@ -130,7 +130,7 @@ export default function AccountantDashboard({ userName }: { userName: string }) 
       )}
 
       {/* Quick Actions */}
-      <Panel title="Quick Actions" icon="bi-lightning-charge-fill">
+      {/* <Panel title="Quick Actions" icon="bi-lightning-charge-fill">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: '4px 0' }}>
           {[
             { href: '/fees/collect', icon: 'bi-cash-coin', label: 'Collect Fee', bg: C.orange },
@@ -162,7 +162,7 @@ export default function AccountantDashboard({ userName }: { userName: string }) 
             </Link>
           ))}
         </div>
-      </Panel>
+      </Panel> */}
 
     </DashShell>
   );
