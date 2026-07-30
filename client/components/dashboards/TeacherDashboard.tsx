@@ -233,7 +233,7 @@ export default function TeacherDashboard({ userId }: { userId: number }) {
                 >
                   <td style={{ padding: '11px 16px', color: '#475569' }}>{new Date(r.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
                   <td style={{ padding: '11px 16px', fontWeight: 700, color: '#1a2e3b' }}>{r.class_name}</td>
-                  <td style={{ padding: '11px 16px', color: '#475569' }}>{r.section_name ||  }</td>
+                  <td style={{ padding: '11px 16px', color: '#475569' }}>{r.section_name || ''}</td>
                   <td style={{ padding: '11px 16px', color: '#475569' }}>{r.total}</td>
                   <td style={{ padding: '11px 16px' }}><span style={{ fontWeight: 700, color: '#16a34a' }}>{r.present}</span></td>
                   <td style={{ padding: '11px 16px' }}><span style={{ fontWeight: 700, color: '#dc2626' }}>{r.absent}</span></td>
