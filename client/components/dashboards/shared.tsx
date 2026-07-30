@@ -680,7 +680,7 @@ export function RecentPaymentsTable({ rows }: { rows: any[] }) {
                   </div>
                 </div>
               </td>
-              <td style={{ padding: '11px 14px', color: '#475569' }}>{p.class_name ||  }</td>
+              <td style={{ padding: '11px 14px', color: '#475569' }}>{p.class_name || ''}</td>
               <td style={{ padding: '11px 14px', color: '#475569' }}>{MONTHS[(p.month || 1) - 1]} {p.year}</td>
               <td style={{ padding: '11px 14px' }}>
                 <span style={{ fontWeight: 800, color: '#16a34a' }}><MaskedAmount amount={p.amount_paid} /></span>
