@@ -221,7 +221,20 @@ const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasP
     });
     return g?.key ?? null;
   });
-  const [schoolName, setSchoolName] = useState('Smart School');
+  const [schoolSettings, setSchoolSettings] = useState<{ school_name: string; logo_url: string; tagline: string }>({
+    school_name: 'Smart School',
+    logo_url: '',
+    tagline: 'School Management System'
+  });
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashFading, setSplashFading] = useState(false);
+
+  // Splash screen timer (2.3 seconds)
+  useEffect(() => {
+    const timer1 = setTimeout(() => setSplashFading(true), 2100);
+    const timer2 = setTimeout(() => setShowSplash(false), 2600);
+    return () => { clearTimeout(timer1); clearTimeout(timer2); };
+  }, []);
 
   // Responsive
   useEffect(() => {
@@ -235,12 +248,42 @@ const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasP
     return () => window.removeEventListener('resize', handle);
   }, []);
 
-  // Fetch school name
+  // Fetch school settings & update favicon / document title
   useEffect(() => {
     if (!isLoggedIn) return;
     fetch(`${API}/settings`)
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.school_name) setSchoolName(d.school_name); })
+      .then(d => {
+        if (d && typeof d === 'object') {
+          const name = d.school_name || 'Smart School';
+          const logo = d.logo_url ? (
+            d.logo_url.startsWith('data:') || d.logo_url.startsWith('http')
+              ? d.logo_url
+              : `${API}${d.logo_url}`
+          ) : '';
+          const tag = d.tagline || 'School Management System';
+
+          setSchoolSettings({
+            school_name: name,
+            logo_url: logo,
+            tagline: tag
+          });
+
+          // Update Document Title
+          document.title = `${name} | School Management`;
+
+          // Dynamic Favicon link
+          if (logo) {
+            let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+            if (!link) {
+              link = document.createElement('link');
+              link.rel = 'shortcut icon';
+              document.getElementsByTagName('head')[0].appendChild(link);
+            }
+            link.href = logo;
+          }
+        }
+      })
       .catch(() => { });
   }, [isLoggedIn]);
 
@@ -305,6 +348,27 @@ const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasP
 
   return (
     <>
+      {/* ══════ APP SPLASH SCREEN (2-3 SECONDS) ══════ */}
+      {showSplash && (
+        <div className={`app-splash-screen ${splashFading ? 'splash-fade-out' : ''}`}>
+          <div className="splash-card">
+            <div className="splash-logo-box">
+              {schoolSettings.logo_url ? (
+                <img src={schoolSettings.logo_url} alt={schoolSettings.school_name} className="splash-logo-img" />
+              ) : (
+                <span className="splash-logo-emoji">🏫</span>
+              )}
+            </div>
+            <h1 className="splash-title">{schoolSettings.school_name}</h1>
+            <p className="splash-subtitle">{schoolSettings.tagline || 'School Management System'}</p>
+
+            <div className="splash-loading-bar">
+              <div className="splash-loading-progress" />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Navigation loading overlay */}
       {(navLoading || navDone) && (
         <div className={`nav-overlay${navDone ? ' nav-overlay-out' : ''}`}>
@@ -321,7 +385,14 @@ const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasP
         <button onClick={() => setOpen(true)} className="sl-hamburger">
           <i className="bi bi-list" />
         </button>
-        <span className="sl-topbar-brand">{schoolName}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+          {schoolSettings.logo_url ? (
+            <img src={schoolSettings.logo_url} alt="Logo" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'contain', background: '#fff', border: '1px solid #e2e8f0', flexShrink: 0 }} />
+          ) : (
+            <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>🏫</span>
+          )}
+          <span className="sl-topbar-brand">{schoolSettings.school_name}</span>
+        </div>
       </div>
 
       {/* Mobile overlay */}
@@ -333,9 +404,16 @@ const SidebarInner = memo(function SidebarInner({ user, isLoggedIn, logout, hasP
         {/* Header */}
         <div className="sl-header">
           <div className="sl-brand">
+            {schoolSettings.logo_url ? (
+              <div style={{ width: 34, height: 34, minWidth: 34, borderRadius: '50%', background: '#fff', border: '1.5px solid rgba(255,255,255,0.2)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 10, flexShrink: 0 }}>
+                <img src={schoolSettings.logo_url} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 2 }} />
+              </div>
+            ) : (
+              <span style={{ fontSize: '1.4rem', marginRight: 10, flexShrink: 0 }}>🏫</span>
+            )}
             <div className="sl-brand-text">
-              <span className="sl-brand-name">{schoolName}</span>
-              <span className="sl-brand-sub">School Management</span>
+              <span className="sl-brand-name">{schoolSettings.school_name}</span>
+              <span className="sl-brand-sub">{schoolSettings.tagline || 'School Management'}</span>
             </div>
           </div>
           {!isMobile && (

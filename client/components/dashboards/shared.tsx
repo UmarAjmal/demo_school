@@ -30,7 +30,7 @@ export function QuickActionsDropdown() {
   ];
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative', zIndex: 100 }}>
+    <div ref={dropdownRef} style={{ position: 'relative', zIndex: 20 }}>
       <button
         onClick={() => setOpen(!open)}
         style={{
@@ -156,7 +156,7 @@ export function DashShell({
         padding: '24px 28px',
         borderRadius: '0 0 24px 24px',
         position: 'relative' as const,
-        zIndex: 50,
+        zIndex: 1,
         overflow: 'visible',
         boxShadow: '0 6px 20px rgba(33,94,97,0.18)',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
