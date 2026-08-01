@@ -1434,102 +1434,106 @@ let ensureTestTablesPromise = null;
 async function ensureTestTables() {
     if (!ensureTestTablesPromise) {
         ensureTestTablesPromise = (async () => {
-            await pool.query(`
-                DO $$
-                BEGIN
-                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_name')
-                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_name') THEN
-                        ALTER TABLE test_papers RENAME COLUMN paper_name TO test_name;
-                    END IF;
-
-                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_name') THEN
-                        ALTER TABLE test_papers ALTER COLUMN paper_name DROP NOT NULL;
-                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_name') THEN
-                            UPDATE test_papers SET test_name = paper_name WHERE test_name IS NULL AND paper_name IS NOT NULL;
+            try {
+                await pool.query(`
+                    DO $$
+                    BEGIN
+                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_name')
+                           AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_name') THEN
+                            ALTER TABLE test_papers RENAME COLUMN paper_name TO test_name;
                         END IF;
-                    END IF;
 
-                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_id')
-                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_id') THEN
-                        ALTER TABLE test_papers RENAME COLUMN paper_id TO test_id;
-                    END IF;
+                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_name') THEN
+                            ALTER TABLE test_papers ALTER COLUMN paper_name DROP NOT NULL;
+                            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_name') THEN
+                                UPDATE test_papers SET test_name = paper_name WHERE test_name IS NULL AND paper_name IS NOT NULL;
+                            END IF;
+                        END IF;
 
-                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='paper_id')
-                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='test_id') THEN
-                        ALTER TABLE test_marks RENAME COLUMN paper_id TO test_id;
-                    END IF;
+                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='paper_id')
+                           AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_papers' AND column_name='test_id') THEN
+                            ALTER TABLE test_papers RENAME COLUMN paper_id TO test_id;
+                        END IF;
 
-                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='remarks') THEN
-                        ALTER TABLE test_marks ADD COLUMN remarks VARCHAR(300);
-                    END IF;
+                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='paper_id')
+                           AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='test_id') THEN
+                            ALTER TABLE test_marks RENAME COLUMN paper_id TO test_id;
+                        END IF;
 
-                    IF EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_marks' AND constraint_name='test_marks_paper_id_student_id_key') THEN
-                        ALTER TABLE test_marks DROP CONSTRAINT test_marks_paper_id_student_id_key;
-                    END IF;
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_marks' AND column_name='remarks') THEN
+                            ALTER TABLE test_marks ADD COLUMN remarks VARCHAR(300);
+                        END IF;
 
-                    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_marks' AND constraint_name='test_marks_test_id_student_id_key') THEN
-                        ALTER TABLE test_marks ADD CONSTRAINT test_marks_test_id_student_id_key UNIQUE (test_id, student_id);
-                    END IF;
+                        IF EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_marks' AND constraint_name='test_marks_paper_id_student_id_key') THEN
+                            ALTER TABLE test_marks DROP CONSTRAINT test_marks_paper_id_student_id_key;
+                        END IF;
 
-                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='paper_id')
-                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='test_id') THEN
-                        ALTER TABLE test_paper_locks RENAME COLUMN paper_id TO test_id;
-                    END IF;
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_marks' AND constraint_name='test_marks_test_id_student_id_key') THEN
+                            ALTER TABLE test_marks ADD CONSTRAINT test_marks_test_id_student_id_key UNIQUE (test_id, student_id);
+                        END IF;
 
-                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='paper_id') THEN
-                        ALTER TABLE test_paper_locks ADD COLUMN IF NOT EXISTS test_id INTEGER;
-                        UPDATE test_paper_locks SET test_id = paper_id WHERE test_id IS NULL AND paper_id IS NOT NULL;
-                    END IF;
+                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='paper_id')
+                           AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='test_id') THEN
+                            ALTER TABLE test_paper_locks RENAME COLUMN paper_id TO test_id;
+                        END IF;
 
-                    IF EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_paper_locks' AND constraint_name='test_paper_locks_paper_id_locked_by_user_id_key') THEN
-                        ALTER TABLE test_paper_locks DROP CONSTRAINT test_paper_locks_paper_id_locked_by_user_id_key;
-                    END IF;
+                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='test_paper_locks' AND column_name='paper_id') THEN
+                            ALTER TABLE test_paper_locks ADD COLUMN IF NOT EXISTS test_id INTEGER;
+                            UPDATE test_paper_locks SET test_id = paper_id WHERE test_id IS NULL AND paper_id IS NOT NULL;
+                        END IF;
 
-                    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_paper_locks' AND constraint_name='test_paper_locks_test_id_locked_by_user_id_key') THEN
-                        ALTER TABLE test_paper_locks ADD CONSTRAINT test_paper_locks_test_id_locked_by_user_id_key UNIQUE (test_id, locked_by_user_id);
-                    END IF;
-                END $$;
-            `);
-            await pool.query(`
-                CREATE TABLE IF NOT EXISTS test_papers (
-                    test_id SERIAL PRIMARY KEY,
-                    test_name VARCHAR(200) NOT NULL,
-                    description TEXT,
-                    total_marks NUMERIC(10,2) NOT NULL CHECK (total_marks > 0),
-                    class_id INTEGER NOT NULL REFERENCES classes(class_id) ON DELETE CASCADE,
-                    section_id INTEGER NOT NULL REFERENCES sections(section_id) ON DELETE CASCADE,
-                    subject_id INTEGER NOT NULL REFERENCES subjects(subject_id) ON DELETE CASCADE,
-                    created_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
-                    created_by_employee_id INTEGER REFERENCES employees(employee_id) ON DELETE SET NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            `);
-            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS test_id SERIAL;`);
-            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS test_name VARCHAR(200);`);
-            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS description TEXT;`);
-            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS subject_id INTEGER REFERENCES subjects(subject_id) ON DELETE CASCADE;`);
-            await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS created_by_employee_id INTEGER REFERENCES employees(employee_id) ON DELETE SET NULL;`);
-            await pool.query(`
-                CREATE TABLE IF NOT EXISTS test_marks (
-                    test_mark_id SERIAL PRIMARY KEY,
-                    test_id INTEGER NOT NULL REFERENCES test_papers(test_id) ON DELETE CASCADE,
-                    student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
-                    obtained_marks NUMERIC(10,2) CHECK (obtained_marks >= 0),
-                    remarks VARCHAR(300),
-                    UNIQUE(test_id, student_id)
-                );
-            `);
-            await pool.query(`
-                CREATE TABLE IF NOT EXISTS test_paper_locks (
-                    lock_id SERIAL PRIMARY KEY,
-                    test_id INTEGER NOT NULL REFERENCES test_papers(test_id) ON DELETE CASCADE,
-                    locked_by_user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
-                    locked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    UNIQUE(test_id, locked_by_user_id)
-                );
-            `);
-            await pool.query(`CREATE INDEX IF NOT EXISTS idx_test_papers_class_sec_sub ON test_papers(class_id, section_id, subject_id);`);
-            await pool.query(`CREATE INDEX IF NOT EXISTS idx_test_marks_test_student ON test_marks(test_id, student_id);`);
+                        IF EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_paper_locks' AND constraint_name='test_paper_locks_paper_id_locked_by_user_id_key') THEN
+                            ALTER TABLE test_paper_locks DROP CONSTRAINT test_paper_locks_paper_id_locked_by_user_id_key;
+                        END IF;
+
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name='test_paper_locks' AND constraint_name='test_paper_locks_test_id_locked_by_user_id_key') THEN
+                            ALTER TABLE test_paper_locks ADD CONSTRAINT test_paper_locks_test_id_locked_by_user_id_key UNIQUE (test_id, locked_by_user_id);
+                        END IF;
+                    END $$;
+                `);
+                await pool.query(`
+                    CREATE TABLE IF NOT EXISTS test_papers (
+                        test_id SERIAL PRIMARY KEY,
+                        test_name VARCHAR(200) NOT NULL,
+                        description TEXT,
+                        total_marks NUMERIC(10,2) NOT NULL CHECK (total_marks > 0),
+                        class_id INTEGER NOT NULL REFERENCES classes(class_id) ON DELETE CASCADE,
+                        section_id INTEGER NOT NULL REFERENCES sections(section_id) ON DELETE CASCADE,
+                        subject_id INTEGER NOT NULL REFERENCES subjects(subject_id) ON DELETE CASCADE,
+                        created_by_user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL,
+                        created_by_employee_id INTEGER REFERENCES employees(employee_id) ON DELETE SET NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+                await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS test_id SERIAL;`);
+                await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS test_name VARCHAR(200);`);
+                await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS description TEXT;`);
+                await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS subject_id INTEGER REFERENCES subjects(subject_id) ON DELETE CASCADE;`);
+                await pool.query(`ALTER TABLE test_papers ADD COLUMN IF NOT EXISTS created_by_employee_id INTEGER REFERENCES employees(employee_id) ON DELETE SET NULL;`);
+                await pool.query(`
+                    CREATE TABLE IF NOT EXISTS test_marks (
+                        test_mark_id SERIAL PRIMARY KEY,
+                        test_id INTEGER NOT NULL REFERENCES test_papers(test_id) ON DELETE CASCADE,
+                        student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
+                        obtained_marks NUMERIC(10,2) CHECK (obtained_marks >= 0),
+                        remarks VARCHAR(300),
+                        UNIQUE(test_id, student_id)
+                    );
+                `);
+                await pool.query(`
+                    CREATE TABLE IF NOT EXISTS test_paper_locks (
+                        lock_id SERIAL PRIMARY KEY,
+                        test_id INTEGER NOT NULL REFERENCES test_papers(test_id) ON DELETE CASCADE,
+                        locked_by_user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+                        locked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(test_id, locked_by_user_id)
+                    );
+                `);
+                await pool.query(`CREATE INDEX IF NOT EXISTS idx_test_papers_class_sec_sub ON test_papers(class_id, section_id, subject_id);`);
+                await pool.query(`CREATE INDEX IF NOT EXISTS idx_test_marks_test_student ON test_marks(test_id, student_id);`);
+            } catch (err) {
+                console.warn("ensureTestTables warning (ignored):", err.message);
+            }
         })();
     }
     return ensureTestTablesPromise;
