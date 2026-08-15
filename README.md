@@ -1,5 +1,25 @@
 # 🎓 Smart School Management System (ERP & Mobile Solution)
 
+[![License](https://img.shields.io/badge/License-Proprietary-red.svg?style=for-the-badge)](LICENSE)
+
+## License
+
+Copyright © 2026 Umar Ajmal. All Rights Reserved.
+
+This source code is publicly available for viewing and educational
+reference purposes only.
+
+No permission is granted to copy, reproduce, modify, distribute,
+publish, sublicense, sell, or use this code or substantial portions
+of this code for commercial or production purposes without prior
+written permission from the copyright holder.
+
+For commercial use, redistribution, modification, or any other use
+beyond viewing and learning, please contact the copyright holder
+for written permission.
+
+---
+
 A commercial, production-ready, enterprise-grade **School Management ERP & Native Mobile Application** suite built for educational institutions, school networks, and multi-branch academies. This product is engineered for high performance, ease of use, dynamic school white-labeling, and zero-headache cloud or on-premise deployment.
 
 ---
@@ -178,7 +198,9 @@ SMS_Pern/
 ## 📄 License & Commercial Product Notice
 
 **Product**: Smart School Management System (ERP & Mobile App)  
-**Developer & Owner**: Commercial Product - Built for Client Distribution & Commercial Licensing.  
+**Developer & Owner**: **Muhammad Umar Ajmal**  
+Repository: [https://github.com/UmarAjmal/PAF-Demo-School-Software.git](https://github.com/UmarAjmal/PAF-Demo-School-Software.git)  
 **Status**: ✅ Production Ready (v2.0)
 
-For custom branding, client deployments, or feature inquiries, refer to the documentation in `/doc/`.
+**Copyright © 2026 Umar Ajmal. All Rights Reserved.**  
+This source code is proprietary and confidential. Strictly for viewing and educational evaluation. For commercial licensing, customization, or deployment inquiries, please contact the author. Refer to the [LICENSE](LICENSE) file for full legal terms.
